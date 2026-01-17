@@ -1,0 +1,134 @@
+{
+    "Common": {
+        "GovWebDeclare": "An official website of The Government of Sri Lanka",
+        "Copyright": "©2025 ETC",
+        "Login": "Login",
+        "Register": "Register",
+        "Theme": "Theme"
+    },
+    "Public": {
+        "Landing": {
+            "Navigation": {
+                "About": "About",
+                "Benefits": "Benefits",
+                "Contact": "Contact"
+            },
+            "Hero": {
+                "Title": "ETC - Electronic Toll Collection",
+                "Subtitle": "Fast, Cashless, Convenient Expressway Travel",
+                "GetStarted": "Get Started",
+                "LearnMore": "Learn More",
+                "ScrollToExplore": "Scroll to explore"
+            },
+            "QuickActions": {
+                "Register": {
+                    "Title": "Register to ETC",
+                    "Description": "Create your account and get started",
+                    "Button": "Get Started"
+                },
+                "Login": {
+                    "Title": "Login to Portal",
+                    "Description": "Access your ETC dashboard",
+                    "Button": "Get Started"
+                },
+                "Track": {
+                    "Title": "Track Registration",
+                    "Description": "Check your registration status",
+                    "Button": "Get Started"
+                }
+            },
+            "CTA": {
+                "Title": "Ready to Travel Smarter?",
+                "Description": "Join thousands of satisfied users and experience the fastest way to travel across Sri Lanka's expressways.",
+                "Button": "Register Now"
+            },
+            "About": {
+                "Title": "About Electronic Toll Collection",
+                "Description": "The Electronic Toll Collection (ETC) system is an automated toll payment solution designed to reduce traffic congestion and improve travel convenience.",
+                "Features": [
+                    {
+                        "Title": "Cashless Convenience",
+                        "Description": "No more stopping for change. Breeze through toll gates automatically.",
+                        "Icon": "CreditCard"
+                    },
+                    {
+                        "Title": "Time Saving",
+                        "Description": "Reduced waiting times at toll plazas ensure you reach your destination faster.",
+                        "Icon": "Zap"
+                    },
+                    {
+                        "Title": "Real-time Tracking",
+                        "Description": "Monitor your usage and balance in real-time through our secure portal.",
+                        "Icon": "Activity"
+                    }
+                ]
+            },
+            "Benefits": {
+                "Title": "Why Choose ETC?",
+                "Description": "Unlock a world of benefits designed to make your journey smoother and more efficient.",
+                "Items": [
+                    {
+                        "Title": "Fuel Efficiency",
+                        "Description": "Steady driving speeds reduce fuel consumption and vehicle wear.",
+                        "Icon": "Fuel"
+                    },
+                    {
+                        "Title": "Eco-Friendly",
+                        "Description": "Lower emissions due to reduced idling at toll barriers.",
+                        "Icon": "Leaf"
+                    },
+                    {
+                        "Title": "Easy Top-ups",
+                        "Description": "Recharge your account instantly via multiple payment channels.",
+                        "Icon": "Smartphone"
+                    }
+                ]
+            },
+            "Statistics": {
+                "Items": [
+                    {
+                        "Label": "Active Users",
+                        "Value": "500K+"
+                    },
+                    {
+                        "Label": "Daily Transactions",
+                        "Value": "150K+"
+                    },
+                    {
+                        "Label": "KM Covered",
+                        "Value": "300+"
+                    },
+                    {
+                        "Label": "Support Agents",
+                        "Value": "24/7"
+                    }
+                ]
+            },
+            "Partners": {
+                "Title": "Our Trusted Partners",
+                "Description": "Collaborating with leading institutions to serve you better."
+            },
+            "Contact": {
+                "Title": "Get in Touch",
+                "Subtitle": "We are here to help you 24/7",
+                "Address": "ETC Centre, Sethsiripaya, Battaramulla",
+                "Email": "info@etc.lk",
+                "Phone": "+94 11 222 3333"
+            },
+            "Footer": {
+                "Description": "Fast, Cashless, Convenient Expressway Travel",
+                "QuickLinks": "Quick Links",
+                "Legal": "Legal",
+                "FollowUs": "Follow Us",
+                "RightsReserved": "Copyright © 2026 Electronic Toll Collection. All rights reserved.",
+                "MadeWith": "Made with",
+                "ForFasterTravel": "for faster travel",
+                "Links": {
+                    "PrivacyPolicy": "Privacy Policy",
+                    "TermsOfService": "Terms of Service",
+                    "Disclaimer": "Disclaimer"
+                }
+            }
+        }
+    }
+}

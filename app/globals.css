@@ -1,26 +1,218 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0b3954;
+  --card: #f8fafc;
+  --card-foreground: #0b3954;
+  --popover: #ffffff;
+  --popover-foreground: #0b3954;
+  --primary: #0b3954;
+  --primary-foreground: #ffffff;
+  --secondary: #087e8b;
+  --secondary-foreground: #ffffff;
+  --muted: #bfd7ea;
+  --muted-foreground: #0b3954;
+  --accent: #ff5a5f;
+  --accent-foreground: #ffffff;
+  --destructive: #c81d25;
+  --destructive-foreground: #ffffff;
+  --border: #e2e8f0;
+  --input: #f8fafc;
+  --ring: #087e8b;
+  --chart-1: #ff5a5f;
+  --chart-2: #087e8b;
+  --chart-3: #0b3954;
+  --chart-4: #bfd7ea;
+  --chart-5: #c81d25;
+  --radius: 0.625rem;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0b3954;
+  --sidebar-primary: #0b3954;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #087e8b;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #087e8b;
+}
+
+.dark {
+  --background: #0b3954;
+  --foreground: #ffffff;
+  --card: #1a3d52;
+  --card-foreground: #ffffff;
+  --popover: #0b3954;
+  --popover-foreground: #ffffff;
+  --primary: #087e8b;
+  --primary-foreground: #ffffff;
+  --secondary: #bfd7ea;
+  --secondary-foreground: #0b3954;
+  --muted: #4a7d96;
+  --muted-foreground: #e2e8f0;
+  --accent: #ff5a5f;
+  --accent-foreground: #ffffff;
+  --destructive: #ff5a5f;
+  --destructive-foreground: #ffffff;
+  --border: #1a3d52;
+  --input: #1a3d52;
+  --ring: #087e8b;
+  --chart-1: #ff5a5f;
+  --chart-2: #bfd7ea;
+  --chart-3: #087e8b;
+  --chart-4: #c81d25;
+  --chart-5: #ffffff;
+  --sidebar: #0b3954;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #087e8b;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ff5a5f;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1a3d52;
+  --sidebar-ring: #087e8b;
 }
 
 @theme inline {
+  --font-sans: "Albert Sans", "Noto Sans Sinhala", sans-serif;
+  --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.animate-count-up {
+  animation: countUp 0.6s ease-out forwards;
+}
+
+
+/* ── 1. Load Albert Sans via @font-face ── */
+@font-face {
+  font-family: "Albert Sans";
+  src: url("/assets/fonts/AlbertSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Albert Sans";
+  src: url("/assets/fonts/AlbertSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Albert Sans";
+  src: url("/assets/fonts/AlbertSans-ExtraBold.ttf") format("truetype");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Albert Sans";
+  src: url("/assets/fonts/AlbertSans-Black.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── 1b. Load Noto Sans Sinhala ── */
+@font-face {
+  font-family: "Noto Sans Sinhala";
+  src: url("/assets/fonts/NotoSansSinhala-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0D80-0DFF, U+200C-200D, U+25CC;
 }
