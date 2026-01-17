@@ -199,19 +199,21 @@ const CardSwap: React.FC<CardSwapProps> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cardDistance, verticalDistance, delay, pauseOnHover, skewAmount, easing])
 
-    const rendered = childArr.map((child, i) =>
-        isValidElement(child)
-            ? cloneElement(child as ReactElement<any>, {
+    const rendered = childArr.map((child, i) => {
+        if (isValidElement(child)) {
+            const element = child as ReactElement<any>
+            return cloneElement(element, {
                 key: i,
                 ref: refs[i],
-                style: { width, height, ...(child.props.style ?? {}) },
+                style: { width, height, ...(element.props.style ?? {}) },
                 onClick: (e: React.MouseEvent) => {
-                    child.props.onClick?.(e)
+                    element.props.onClick?.(e)
                     onCardClick?.(i)
                 },
             })
-            : child,
-    )
+        }
+        return child
+    })
 
     return (
         <div ref={container} className="card-swap-container" style={{ width, height }}>
