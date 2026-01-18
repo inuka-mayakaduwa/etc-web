@@ -3,6 +3,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import dotenv from "dotenv";
 import path from "path";
 import readline from "readline";
+import { DEFINED_PERMISSIONS } from "../lib/permission-definitions";
 
 // Load .env safely
 dotenv.config({
@@ -48,6 +49,7 @@ async function main() {
         { code: "PENDING_TAG_CREATION", label: "Pending Tag Creation", category: "IN_PROGRESS", orderIndex: 12 },
         { code: "AWAITING_APPOINTMENT", label: "Awaiting Appointment", category: "IN_PROGRESS", orderIndex: 13 },
         { code: "APPOINTMENT_SCHEDULED", label: "Appointment Scheduled", category: "IN_PROGRESS", orderIndex: 14 },
+        { code: "PENDING_PROVISIONING", label: "Pending Provisioning", category: "IN_PROGRESS", orderIndex: 15 },
 
         // DONE / FAILED
         { code: "COMPLETED", label: "Completed", category: "DONE", orderIndex: 90, isTerminal: true },
@@ -136,25 +138,11 @@ async function main() {
     });
 
     // Create a base set of permissions (Just a few important ones for demo)
-    const permissions = [
-        "etc.requests.view",
-        "etc.requests.edit",
-        "etc.requests.reject",
-        "etc.requests.approve_info",
-        "etc.requests.review_info",
-        "etc.requests.manage_tags",
-        "etc.payment.verify",
-        "etc.settings.view",
-        "etc.settings.manage",
-        "etc.users.view",
-        "etc.users.manage",
-    ];
-
-    for (const p of permissions) {
+    for (const p of DEFINED_PERMISSIONS) {
         const perm = await prisma.systemPermission.upsert({
-            where: { node: p },
-            update: {},
-            create: { node: p, description: `Permission for ${p}` },
+            where: { node: p.node },
+            update: { description: p.description },
+            create: { node: p.node, description: p.description },
         });
 
         // Assign all to SUPER_ADMIN

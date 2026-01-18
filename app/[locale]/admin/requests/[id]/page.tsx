@@ -10,7 +10,8 @@ import { format } from "date-fns"
 import { ArrowLeft, User, MapPin, Calendar, Tag, Clock } from "lucide-react"
 import Link from "next/link"
 import { RequestActions } from "./components"
-import { AdminAppointmentBooking, AdminAppointmentManagement, AppointmentHistory } from "./appointmentComponents"
+// Update import to include AdminProvisioningManagement
+import { AdminAppointmentBooking, AdminAppointmentManagement, AppointmentHistory, AdminProvisioningManagement } from "./appointmentComponents"
 
 export default async function RequestDetailPage({
     params
@@ -198,6 +199,11 @@ export default async function RequestDetailPage({
                     {/* Admin Appointment Management - For Scheduled Appointments */}
                     {request.currentStatus.code === 'APPOINTMENT_SCHEDULED' && request.activeAppointmentAttempt && (
                         <AdminAppointmentManagement request={request} />
+                    )}
+
+                    {/* Admin Provisioning Management - For Pending Provisioning */}
+                    {request.currentStatus.code === 'PENDING_PROVISIONING' && (
+                        <AdminProvisioningManagement request={request} />
                     )}
 
                     {/* Admin Appointment Booking - For Awaiting Appointments */}

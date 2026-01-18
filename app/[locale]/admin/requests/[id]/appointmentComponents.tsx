@@ -4,10 +4,11 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar as CalendarIcon, Clock } from "lucide-react"
+import { Calendar as CalendarIcon, Clock, Tag } from "lucide-react"
 import { format, addMonths, startOfToday } from "date-fns"
 import { toast } from "sonner"
 import { adminBookAppointment, getAvailableSlots, getAvailableDates } from "./appointmentActions"
+import { markInstallationCompleted, provisionCompleted } from "./provisioningActions"
 import { Calendar } from "@/components/ui/calendar"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -213,6 +214,7 @@ export function AdminAppointmentManagement({ request }: { request: any }) {
     const [showNoShowDialog, setShowNoShowDialog] = useState(false)
     const [showCancelDialog, setShowCancelDialog] = useState(false)
     const [showRescheduleDialog, setShowRescheduleDialog] = useState(false)
+    const [showCompleteDialog, setShowCompleteDialog] = useState(false)
     const [selectedDate, setSelectedDate] = useState<Date | undefined>()
     const [availableDates, setAvailableDates] = useState<any[]>([])
     const [availableSlots, setAvailableSlots] = useState<any[]>([])
@@ -247,6 +249,20 @@ export function AdminAppointmentManagement({ request }: { request: any }) {
             router.refresh()
         } catch (error: any) {
             toast.error(error.message || "Failed to cancel appointment")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const handleCompleteInstallation = async () => {
+        setLoading(true)
+        try {
+            await markInstallationCompleted(request.id)
+            toast.success("Installation marked as completed")
+            setShowCompleteDialog(false)
+            router.refresh()
+        } catch (error: any) {
+            toast.error(error.message || "Failed to mark installation completed")
         } finally {
             setLoading(false)
         }
@@ -346,33 +362,59 @@ export function AdminAppointmentManagement({ request }: { request: any }) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="flex flex-col gap-2">
                         <Button
-                            variant="outline"
-                            onClick={() => {
-                                loadDatesForReschedule()
-                                setShowRescheduleDialog(true)
-                            }}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white"
+                            onClick={() => setShowCompleteDialog(true)}
                         >
-                            Reschedule
+                            Mark Installation As Completed
                         </Button>
-                        <Button
-                            variant="outline"
-                            className="text-orange-600"
-                            onClick={() => setShowNoShowDialog(true)}
-                        >
-                            No-Show
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="text-red-600"
-                            onClick={() => setShowCancelDialog(true)}
-                        >
-                            Cancel
-                        </Button>
+                        <div className="grid grid-cols-3 gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    loadDatesForReschedule()
+                                    setShowRescheduleDialog(true)
+                                }}
+                            >
+                                Reschedule
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-orange-600"
+                                onClick={() => setShowNoShowDialog(true)}
+                            >
+                                No-Show
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="text-red-600"
+                                onClick={() => setShowCancelDialog(true)}
+                            >
+                                Cancel
+                            </Button>
+                        </div>
                     </div>
                 </CardContent>
             </Card>
+
+            {/* Complete Installation Dialog */}
+            <AlertDialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Installation Completion?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will mark the installation as completed and change the status to "Pending Provisioning".
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleCompleteInstallation} disabled={loading} className="bg-green-600 hover:bg-green-700">
+                            {loading ? "Completing..." : "Confirm Completion"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
             {/* No-Show Dialog */}
             <AlertDialog open={showNoShowDialog} onOpenChange={setShowNoShowDialog}>
@@ -474,7 +516,68 @@ export function AdminAppointmentManagement({ request }: { request: any }) {
     )
 }
 
-// Component to display appointment history
+export function AdminProvisioningManagement({ request }: { request: any }) {
+    const router = useRouter()
+    const [loading, setLoading] = useState(false)
+    const [showProvisionDialog, setShowProvisionDialog] = useState(false)
+
+    const handleProvision = async () => {
+        setLoading(true)
+        try {
+            await provisionCompleted(request.id)
+            toast.success("Provisioning completed and request finalized")
+            setShowProvisionDialog(false)
+            router.refresh()
+        } catch (error: any) {
+            toast.error(error.message || "Failed to provision")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    return (
+        <>
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Tag className="h-5 w-5" />
+                        Pending Provisioning
+                    </CardTitle>
+                    <CardDescription>
+                        Installation is completed. Finalize provisioning to complete the request.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button
+                        onClick={() => setShowProvisionDialog(true)}
+                        className="w-full"
+                        size="lg"
+                    >
+                        Provision Completed
+                    </Button>
+                </CardContent>
+            </Card>
+
+            <AlertDialog open={showProvisionDialog} onOpenChange={setShowProvisionDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Provisioning?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will finish the request workflow and mark it as COMPLETED.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel disabled={loading}>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleProvision} disabled={loading}>
+                            {loading ? "Provisioning..." : "Confirm & Complete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+    )
+}
+
 export function AppointmentHistory({ request }: { request: any }) {
     const attempts = request.appointmentAttempts || []
 

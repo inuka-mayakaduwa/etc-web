@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db"
 import { getAvailableSlots } from "@/app/[locale]/admin/appointments/actions"
 import { revalidatePath } from "next/cache"
 import { addDays, startOfDay } from "date-fns"
+import { notificationProcessor } from "@/lib/services/notification/processor"
 
 export async function getRequestForBooking(requestNo: string) {
     const request = await prisma.eTCRegistrationRequest.findUnique({
@@ -103,6 +104,43 @@ export async function bookAppointment(data: {
     console.log('✅ [BOOKING] Status updated to:', updatedRequest.currentStatus.code)
 
     revalidatePath(`/etc/track/${request.requestNo}`)
+
+    // --- Send Notification ---
+    try {
+        if (request.notifyEmail || request.notifySMS) {
+            const recipient = {
+                name: request.applicantName,
+                email: request.applicantEmail,
+                mobile: request.applicantMobile
+            }
+
+            // Format date/time
+            const dateStr = data.datetime.toLocaleDateString('en-GB')
+            const timeStr = data.datetime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+            // Get location details
+            const location = await prisma.installationLocation.findUnique({
+                where: { id: data.locationId }
+            })
+
+            const context = {
+                requestNo: request.requestNo,
+                date: dateStr,
+                time: timeStr,
+                location: location?.name || "ETC Center"
+            }
+
+            const finalRecipient = {
+                ...recipient,
+                email: request.notifyEmail ? recipient.email : undefined,
+                mobile: request.notifySMS ? recipient.mobile : undefined
+            }
+
+            await notificationProcessor.sendNotification(finalRecipient, 'APPOINTMENT_CREATED', context)
+        }
+    } catch (err) {
+        console.error("Failed to send booking notification", err)
+    }
 
     return appointment
 }
@@ -221,6 +259,43 @@ export async function rescheduleAppointment(data: {
     console.log('✅ [RESCHEDULE] Updated active appointment')
 
     revalidatePath(`/etc/track/${request.requestNo}`)
+
+    // --- Send Notification ---
+    try {
+        if (request.notifyEmail || request.notifySMS) {
+            const recipient = {
+                name: request.applicantName,
+                email: request.applicantEmail,
+                mobile: request.applicantMobile
+            }
+
+            // Format date/time
+            const dateStr = data.datetime.toLocaleDateString('en-GB')
+            const timeStr = data.datetime.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+
+            // Get location details
+            const location = await prisma.installationLocation.findUnique({
+                where: { id: data.locationId }
+            })
+
+            const context = {
+                requestNo: request.requestNo,
+                date: dateStr,
+                time: timeStr,
+                location: location?.name || "ETC Center"
+            }
+
+            const finalRecipient = {
+                ...recipient,
+                email: request.notifyEmail ? recipient.email : undefined,
+                mobile: request.notifySMS ? recipient.mobile : undefined
+            }
+
+            await notificationProcessor.sendNotification(finalRecipient, 'APPOINTMENT_CREATED', context)
+        }
+    } catch (err) {
+        console.error("Failed to send reschedule notification", err)
+    }
 
     return newAppointment
 }

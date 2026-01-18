@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db"
 import { auth } from "@/app/auth"
 import { revalidatePath } from "next/cache"
 import { hasPermission } from "@/lib/permissions"
+import { notificationProcessor } from "@/lib/services/notification/processor"
 
 async function requirePermission(node: string) {
     const session = await auth()
@@ -196,6 +197,42 @@ export async function updateRequestStatus(
             })
         }
     })
+
+    // --- Send Notification ---
+    try {
+        // Fetch fresh request with details for notification
+        const fullRequest = await prisma.eTCRegistrationRequest.findUnique({
+            where: { id: requestId }
+        })
+
+        if (fullRequest && (fullRequest.notifyEmail || fullRequest.notifySMS)) {
+            const recipient = {
+                name: fullRequest.applicantName,
+                email: fullRequest.applicantEmail,
+                mobile: fullRequest.applicantMobile
+            }
+
+            const context = {
+                requestNo: fullRequest.requestNo,
+                status: newStatus.label || newStatus.code,
+                message: comment || "Your request status has been updated."
+            }
+
+            // We can filter based on preferences here, but processor handles existence.
+            // However, let's respect the flags:
+            const finalRecipient = {
+                ...recipient,
+                email: fullRequest.notifyEmail ? recipient.email : undefined,
+                mobile: fullRequest.notifySMS ? recipient.mobile : undefined
+            }
+
+            await notificationProcessor.sendNotification(finalRecipient, 'REQUEST_STATUS_CHANGE', context)
+        }
+    } catch (err) {
+        console.error("Failed to send status notification", err)
+        // Don't fail the action if notification fails
+    }
+
 
     revalidatePath("/admin/requests")
     return { success: true }

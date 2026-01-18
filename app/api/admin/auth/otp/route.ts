@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { notificationProcessor } from "@/lib/services/notification/processor"
 
 const requestOtpSchema = z.object({
     email: z.string().email(),
@@ -42,8 +43,19 @@ export async function POST(req: NextRequest) {
             },
         })
 
-        // TODO: Send Email. For now, log to console.
-        console.log(`[DEVELOPMENT] OTP for ${email}: ${otp}`)
+        // Send OTP via Notification Processor
+        // It handles checking for mobile/email internally based on what's passed
+        const recipient = {
+            email: user.email,
+            mobile: user.mobile, // SystemUser has mobile
+            name: user.name
+        };
+
+        await notificationProcessor.sendNotification(recipient, 'OTP', {
+            otp: otp
+        });
+
+        // console.log(`[DEVELOPMENT] OTP for ${email}: ${otp}`)
 
         return NextResponse.json({ message: "If user exists, OTP sent." })
     } catch (error) {
