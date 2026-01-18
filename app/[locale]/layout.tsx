@@ -2,8 +2,7 @@ import type React from "react"
 import { NextIntlClientProvider } from "next-intl"
 import { notFound } from "next/navigation"
 import { routing } from "@/i18n/routing"
-import Header from "@/components/header"
-import TopHeader from "@/components/top-header"
+import TopHeader from "@/components/public/top-header"
 
 // statically import each file so the bundler knows about them
 import en from "../../messages/en.json"
@@ -48,7 +47,6 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
             <div className="flex flex-col min-h-screen" lang={lang}>
                 <TopHeader />
-                <Header />
                 {children}
             </div>
         </NextIntlClientProvider>
