@@ -1,15 +1,17 @@
 "use client"
 
-import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter } from "@/components/ui/sidebar"
-import { Home, CreditCard, Settings, LogOut, FileText, Calendar } from "lucide-react"
+import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, SidebarInset } from "@/components/ui/sidebar"
+import { FileText, CreditCard, Settings, LogOut, Calendar, Command } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut } from "next-auth/react"
+import { CommandPalette } from "@/components/admin/command-palette"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
-export default function AdminSidebar({ children, permissions }: { children: React.ReactNode, permissions: Record<string, boolean> }) {
+export default function AdminSidebarEnhanced({ children, permissions }: { children: React.ReactNode, permissions: Record<string, boolean> }) {
     const pathname = usePathname()
 
-    // Simple active check. adjust for locale if needed or uses matches
     const isActive = (path: string) => pathname?.includes(path)
 
     return (
@@ -17,9 +19,39 @@ export default function AdminSidebar({ children, permissions }: { children: Reac
             <div className="flex min-h-screen w-full">
                 <Sidebar>
                     <SidebarHeader className="p-4 border-b">
-                        <h2 className="text-lg font-bold tracking-tight">ETC Admin</h2>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-bold tracking-tight">ETC Admin</h2>
+                                <p className="text-xs text-muted-foreground">Management Portal</p>
+                            </div>
+                        </div>
                     </SidebarHeader>
+                    
                     <SidebarContent>
+                        <SidebarGroup>
+                            <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
+                            <SidebarGroupContent>
+                                <div className="px-3 py-2">
+                                    <Button 
+                                        variant="outline" 
+                                        className="w-full justify-start gap-2"
+                                        onClick={() => {
+                                            const event = new KeyboardEvent('keydown', {
+                                                key: 'k',
+                                                metaKey: true,
+                                                bubbles: true
+                                            })
+                                            document.dispatchEvent(event)
+                                        }}
+                                    >
+                                        <Command className="h-4 w-4" />
+                                        <span className="flex-1 text-left">Command Menu</span>
+                                        <Badge variant="secondary" className="text-xs">⌘K</Badge>
+                                    </Button>
+                                </div>
+                            </SidebarGroupContent>
+                        </SidebarGroup>
+
                         <SidebarGroup>
                             <SidebarGroupLabel>Management</SidebarGroupLabel>
                             <SidebarGroupContent>
@@ -76,6 +108,7 @@ export default function AdminSidebar({ children, permissions }: { children: Reac
                             </SidebarGroupContent>
                         </SidebarGroup>
                     </SidebarContent>
+                    
                     <SidebarFooter className="p-4 border-t">
                         <SidebarMenu>
                             <SidebarMenuItem>
@@ -87,10 +120,14 @@ export default function AdminSidebar({ children, permissions }: { children: Reac
                         </SidebarMenu>
                     </SidebarFooter>
                 </Sidebar>
-                <main className="flex-1 overflow-auto bg-background p-6">
-                    {children}
-                </main>
+                
+                <SidebarInset className="flex-1">
+                    <main className="p-6">
+                        {children}
+                    </main>
+                </SidebarInset>
             </div>
+            <CommandPalette permissions={permissions} />
         </SidebarProvider>
     )
 }

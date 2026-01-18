@@ -3,7 +3,10 @@ import { hasPermission } from "@/lib/permissions"
 import { auth } from "@/app/auth"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { RequestListTable } from "./components"
+import { RequestListTableEnhanced } from "./components"
+import { StatCard } from "@/components/admin/stat-card"
+import { FileText, Clock, CheckCircle, XCircle } from "lucide-react"
+import { prisma } from "@/lib/db"
 
 export default async function RequestsPage() {
     const session = await auth()
@@ -25,28 +28,82 @@ export default async function RequestsPage() {
         )
     }
 
-    const requests = await getRequests()
+    // Fetch data
+    const [requests, officers, statuses] = await Promise.all([
+        getRequests(),
+        prisma.systemUser.findMany({
+            where: { active: true },
+            select: { id: true, name: true }
+        }),
+        prisma.requestStatus.findMany({
+            where: { active: true },
+            select: { id: true, code: true, label: true, category: true }
+        })
+    ])
+
+    // Calculate stats
+    const totalRequests = requests.length
+    const openRequests = requests.filter(r => r.currentStatus.category === 'OPEN').length
+    const inProgressRequests = requests.filter(r => r.currentStatus.category === 'IN_PROGRESS').length
+    const completedRequests = requests.filter(r => r.currentStatus.category === 'DONE').length
 
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Request Management</h2>
+                    <h1 className="text-3xl font-bold tracking-tight">Request Management</h1>
                     <p className="text-muted-foreground">
                         View and manage ETC registration requests
                     </p>
                 </div>
             </div>
 
+            {/* Stats Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                    title="Total Requests"
+                    value={totalRequests}
+                    icon={FileText}
+                    variant="default"
+                    description="All time"
+                />
+                <StatCard
+                    title="Open"
+                    value={openRequests}
+                    icon={Clock}
+                    variant="primary"
+                    description="Awaiting action"
+                />
+                <StatCard
+                    title="In Progress"
+                    value={inProgressRequests}
+                    icon={Clock}
+                    variant="warning"
+                    description="Being processed"
+                />
+                <StatCard
+                    title="Completed"
+                    value={completedRequests}
+                    icon={CheckCircle}
+                    variant="success"
+                    description="Successfully processed"
+                />
+            </div>
+
+            {/* Data Table */}
             <Card>
                 <CardHeader>
                     <CardTitle>All Requests</CardTitle>
                     <CardDescription>
-                        ETC registration requests and their current status
+                        Search, filter and manage ETC registration requests
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <RequestListTable requests={requests} />
+                    <RequestListTableEnhanced
+                        requests={requests}
+                        officers={officers}
+                        statuses={statuses}
+                    />
                 </CardContent>
             </Card>
         </div>

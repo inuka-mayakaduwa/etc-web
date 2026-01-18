@@ -2,10 +2,12 @@ import { Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getPendingPayments, getPaymentsByStatus } from "./actions"
-import { PaymentListTable } from "./components"
+import { PaymentListTableEnhanced } from "./components"
 import { hasPermission } from "@/lib/permissions"
 import { auth } from "@/app/auth"
 import { redirect } from "next/navigation"
+import { StatCard } from "@/components/admin/stat-card"
+import { DollarSign, Clock, CheckCircle, XCircle } from "lucide-react"
 
 export default async function PaymentsPage() {
     const session = await auth()
@@ -32,15 +34,51 @@ export default async function PaymentsPage() {
         getPaymentsByStatus('ALL')
     ])
 
+    // Calculate stats
+    const completedPayments = allPayments.filter(p => p.status === 'COMPLETED').length
+    const rejectedPayments = allPayments.filter(p => p.status === 'REJECTED').length
+
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-3xl font-bold tracking-tight">Payment Management</h2>
+                    <h1 className="text-3xl font-bold tracking-tight">Payment Management</h1>
                     <p className="text-muted-foreground">
                         Review and verify payment submissions
                     </p>
                 </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                    title="Total Payments"
+                    value={allPayments.length}
+                    icon={DollarSign}
+                    variant="default"
+                    description="All time"
+                />
+                <StatCard
+                    title="Pending Review"
+                    value={pendingPayments.length}
+                    icon={Clock}
+                    variant="warning"
+                    description="Awaiting verification"
+                />
+                <StatCard
+                    title="Approved"
+                    value={completedPayments}
+                    icon={CheckCircle}
+                    variant="success"
+                    description="Verified payments"
+                />
+                <StatCard
+                    title="Rejected"
+                    value={rejectedPayments}
+                    icon={XCircle}
+                    variant="danger"
+                    description="Failed verification"
+                />
             </div>
 
             <Tabs defaultValue="pending" className="space-y-4">
@@ -60,7 +98,7 @@ export default async function PaymentsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <PaymentListTable
+                            <PaymentListTableEnhanced
                                 payments={pendingPayments}
                             />
                         </CardContent>
@@ -76,7 +114,7 @@ export default async function PaymentsPage() {
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <PaymentListTable
+                            <PaymentListTableEnhanced
                                 payments={allPayments}
                             />
                         </CardContent>

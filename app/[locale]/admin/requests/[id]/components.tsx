@@ -9,9 +9,11 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { addComment, updateRequestStatus, setRfidValue } from "../actions"
-import { MessageSquare, Tag } from "lucide-react"
+import { MessageSquare, Tag, MoreVertical, UserPlus, CheckCircle, XCircle, Edit, AlertCircle } from "lucide-react"
+import { format } from "date-fns"
 
 export function RequestActions({ request }: { request: any }) {
     const router = useRouter()
@@ -20,11 +22,6 @@ export function RequestActions({ request }: { request: any }) {
     const [comment, setComment] = useState("")
     const [rfid, setRfid] = useState(request.rfidValue || "")
     const [loading, setLoading] = useState(false)
-
-    // Debug logging
-    console.log("Request Status:", request.currentStatus.code)
-    console.log("Request Details:", request)
-    console.log("Payment Attempts:", request.paymentAttempts)
 
     const handleStatusChange = async (newStatus: string, comment?: string) => {
         setLoading(true)
@@ -78,131 +75,67 @@ export function RequestActions({ request }: { request: any }) {
 
     return (
         <>
-            <Card>
-                <CardHeader>
-                    <CardTitle className="text-lg">Actions</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                    {/* Always show Add Comment */}
+            <div className="flex items-center gap-2">
+                <Button
+                    onClick={() => setCommentOpen(true)}
+                    variant="outline"
+                >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Add Comment
+                </Button>
+
+                {request.currentStatus.code === 'PENDING_TAG_CREATION' && (
                     <Button
+                        onClick={() => setRfidOpen(true)}
                         variant="outline"
-                        className="w-full justify-start"
-                        onClick={() => setCommentOpen(true)}
                     >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Add Comment
+                        <Tag className="h-4 w-4 mr-2" />
+                        {request.rfidValue ? 'Update RFID' : 'Set RFID'}
                     </Button>
+                )}
 
-                    {/* Show RFID button only for PENDING_TAG_CREATION */}
-                    {request.currentStatus.code === 'PENDING_TAG_CREATION' && (
-                        <Button
-                            variant="outline"
-                            className="w-full justify-start"
-                            onClick={() => setRfidOpen(true)}
-                        >
-                            <Tag className="h-4 w-4 mr-2" />
-                            {request.rfidValue ? 'Update RFID' : 'Set RFID Value'}
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon">
+                            <MoreVertical className="h-4 w-4" />
                         </Button>
-                    )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        
+                        {request.currentStatus.code === 'PENDING_TAG_CREATION' && request.rfidValue && (
+                            <DropdownMenuItem onClick={() => handleStatusChange('AWAITING_APPOINTMENT')}>
+                                <CheckCircle className="h-4 w-4 mr-2" />
+                                Move to Awaiting Appointment
+                            </DropdownMenuItem>
+                        )}
 
-                    {/* Status-specific actions */}
-                    {request.currentStatus.code === 'PENDING_INFORMATION_REVIEW' && (
-                        <>
-                            <div className="pt-2 pb-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Information Review</p>
-                            </div>
-                            <Button
-                                onClick={() => handleStatusChange('PENDING_TAG_CREATION', 'Information verified and approved')}
-                                className="w-full justify-start bg-green-600 hover:bg-green-700"
-                            >
-                                ✓ Verify Information
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    const comment = prompt("Enter instructions for the customer on what needs to be edited:")
-                                    if (comment) {
-                                        handleStatusChange('PENDING_INFORMATION_EDIT', comment)
-                                    }
-                                }}
-                                variant="outline"
-                                className="w-full justify-start"
-                            >
-                                ✏️ Propose Edit
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    const reason = prompt("Enter rejection reason (e.g., fraud, invalid documents):")
-                                    if (!reason) return
-
-                                    const hasCompletedPayment = request.paymentAttempts.some((p: any) => p.status === 'COMPLETED')
-
-                                    if (hasCompletedPayment) {
-                                        handleStatusChange('PENDING_REFUND', `Rejected: ${reason}. Refund required.`)
-                                        toast.info("Request moved to Pending Refund. Complete refund process before final rejection.")
-                                    } else {
-                                        handleStatusChange('REJECTED', `Rejected: ${reason}`)
-                                    }
-                                }}
-                                variant="destructive"
-                                className="w-full justify-start"
-                            >
-                                ✕ Reject Completely
-                            </Button>
-                        </>
-                    )}
-
-                    {request.currentStatus.code === 'PENDING_TAG_CREATION' && (
-                        <>
-                            <div className="pt-2 pb-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Tag Creation</p>
-                            </div>
-                            <Button
-                                onClick={() => handleStatusChange('AWAITING_APPOINTMENT', 'Tag ready')}
-                                className="w-full justify-start"
-                            >
-                                Tag Ready → Awaiting Appointment
-                            </Button>
-                        </>
-                    )}
-
-                    {request.currentStatus.code === 'PENDING_INFORMATION_EDIT' && (
-                        <div className="p-3 bg-blue-50 rounded text-sm text-blue-800">
-                            Waiting for customer to submit corrections.
-                        </div>
-                    )}
-
-                    {request.currentStatus.code === 'PENDING_REFUND' && (
-                        <>
-                            <div className="pt-2 pb-1">
-                                <p className="text-xs font-medium text-muted-foreground uppercase">Refund Processing</p>
-                            </div>
-                            <Button
-                                onClick={() => {
-                                    const refundNote = prompt("Enter refund details (method, reference number):")
-                                    if (refundNote) {
-                                        handleStatusChange('REJECTED', `Refund completed: ${refundNote}`)
-                                    }
-                                }}
-                                className="w-full justify-start"
-                            >
-                                Mark Refund Complete → Rejected
-                            </Button>
-                            <Button
-                                onClick={() => {
-                                    const refundNote = prompt("Enter refund details (method, reference number):")
-                                    if (refundNote) {
-                                        handleStatusChange('CANCELED', `Refund completed: ${refundNote}`)
-                                    }
-                                }}
-                                variant="outline"
-                                className="w-full justify-start"
-                            >
-                                Mark Refund Complete → Canceled
-                            </Button>
-                        </>
-                    )}
-                </CardContent>
-            </Card>
+                        {request.currentStatus.code === 'PENDING_INFORMATION_REVIEW' && (
+                            <>
+                                <DropdownMenuItem onClick={() => handleStatusChange('PENDING_TAG_CREATION')}>
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Approve Information
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    const reason = prompt("Enter reason for requesting edits:")
+                                    if (reason) handleStatusChange('PENDING_INFORMATION_EDIT', reason)
+                                }}>
+                                    <Edit className="h-4 w-4 mr-2" />
+                                    Request Edits
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => {
+                                    const reason = prompt("Enter reason for rejection:")
+                                    if (reason) handleStatusChange('PENDING_REFUND', reason)
+                                }} className="text-destructive">
+                                    <XCircle className="h-4 w-4 mr-2" />
+                                    Reject Request
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
 
             {/* Add Comment Dialog */}
             <Dialog open={commentOpen} onOpenChange={setCommentOpen}>
@@ -210,21 +143,23 @@ export function RequestActions({ request }: { request: any }) {
                     <DialogHeader>
                         <DialogTitle>Add Comment</DialogTitle>
                         <DialogDescription>
-                            Add an internal note to this request
+                            Add an internal note about this request
                         </DialogDescription>
                     </DialogHeader>
-                    <div>
-                        <Label>Comment</Label>
-                        <Textarea
-                            value={comment}
-                            onChange={(e) => setComment(e.target.value)}
-                            placeholder="Enter your comment..."
-                            rows={4}
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <Label>Comment</Label>
+                            <Textarea
+                                value={comment}
+                                onChange={(e) => setComment(e.target.value)}
+                                placeholder="Enter your comment..."
+                                rows={4}
+                            />
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setCommentOpen(false)}>Cancel</Button>
-                        <Button onClick={handleAddComment} disabled={loading}>
+                        <Button onClick={handleAddComment} disabled={loading || !comment.trim()}>
                             {loading ? "Adding..." : "Add Comment"}
                         </Button>
                     </DialogFooter>
@@ -237,25 +172,108 @@ export function RequestActions({ request }: { request: any }) {
                     <DialogHeader>
                         <DialogTitle>{request.rfidValue ? 'Update' : 'Set'} RFID Value</DialogTitle>
                         <DialogDescription>
-                            Enter the RFID tag value for this request
+                            Enter the RFID tag value for this vehicle
                         </DialogDescription>
                     </DialogHeader>
-                    <div>
-                        <Label>RFID Value</Label>
-                        <Input
-                            value={rfid}
-                            onChange={(e) => setRfid(e.target.value)}
-                            placeholder="Enter RFID value..."
-                        />
+                    <div className="space-y-4">
+                        <div>
+                            <Label>RFID Value</Label>
+                            <Input
+                                value={rfid}
+                                onChange={(e) => setRfid(e.target.value)}
+                                placeholder="Enter RFID value..."
+                            />
+                        </div>
                     </div>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setRfidOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSetRfid} disabled={loading}>
-                            {loading ? "Saving..." : "Save RFID"}
+                        <Button onClick={handleSetRfid} disabled={loading || !rfid.trim()}>
+                            {loading ? "Saving..." : request.rfidValue ? 'Update RFID' : 'Set RFID'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
         </>
+    )
+}
+
+export function ActivityTimeline({ auditLogs }: { auditLogs: any[] }) {
+    const getActionIcon = (action: string) => {
+        switch (action) {
+            case 'STATUS_CHANGED':
+                return <CheckCircle className="h-4 w-4" />
+            case 'ASSIGNED_CHANGED':
+                return <UserPlus className="h-4 w-4" />
+            case 'REQUEST_UPDATED':
+                return <Edit className="h-4 w-4" />
+            default:
+                return <AlertCircle className="h-4 w-4" />
+        }
+    }
+
+    const getActionColor = (action: string) => {
+        switch (action) {
+            case 'STATUS_CHANGED':
+                return 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
+            case 'ASSIGNED_CHANGED':
+                return 'bg-purple-500/10 text-purple-700 dark:text-purple-400'
+            case 'REQUEST_UPDATED':
+                return 'bg-green-500/10 text-green-700 dark:text-green-400'
+            default:
+                return 'bg-gray-500/10 text-gray-700 dark:text-gray-400'
+        }
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Activity Timeline</CardTitle>
+            </CardHeader>
+            <CardContent>
+                {auditLogs.length === 0 ? (
+                    <div className="text-center py-12">
+                        <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-sm text-muted-foreground">No activity recorded yet</p>
+                    </div>
+                ) : (
+                    <div className="relative space-y-4 before:absolute before:left-[15px] before:top-2 before:h-[calc(100%-1rem)] before:w-0.5 before:bg-border">
+                        {auditLogs.map((log: any, index: number) => (
+                            <div key={log.id} className="relative flex gap-4 pl-8">
+                                <div className={`absolute left-0 p-2 rounded-full ${getActionColor(log.action)}`}>
+                                    {getActionIcon(log.action)}
+                                </div>
+                                <div className="flex-1 pb-4">
+                                    <div className="flex items-start justify-between mb-1">
+                                        <div>
+                                            <p className="font-medium text-sm">
+                                                {log.action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                            </p>
+                                            <p className="text-xs text-muted-foreground">
+                                                by {log.doneBy.name} • {format(new Date(log.doneAt), 'PPp')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {log.oldData && (
+                                        <div className="mt-2 text-sm">
+                                            {log.oldData.statusCode && log.newData.statusCode && (
+                                                <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="text-xs">
+                                                        {log.oldData.statusCode}
+                                                    </Badge>
+                                                    <span className="text-muted-foreground">→</span>
+                                                    <Badge variant="outline" className="text-xs">
+                                                        {log.newData.statusCode}
+                                                    </Badge>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     )
 }

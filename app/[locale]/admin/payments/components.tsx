@@ -1,21 +1,23 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { format } from "date-fns"
-import { Check, X, Eye, DollarSign } from "lucide-react"
+import { Check, X, Eye, DollarSign, Search } from "lucide-react"
 import { toast } from "sonner"
 import { approvePayment, rejectPayment } from "./actions"
+import { DataTableToolbar } from "@/components/admin/data-table-toolbar"
+import { FilterPopover } from "@/components/admin/filter-popover"
+import { EmptyState } from "@/components/admin/empty-state"
 
-export function PaymentListTable({ payments }: { payments: any[] }) {
+export function PaymentListTableEnhanced({ payments }: { payments: any[] }) {
     const router = useRouter()
     const [detailsOpen, setDetailsOpen] = useState(false)
     const [approveOpen, setApproveOpen] = useState(false)
@@ -25,6 +27,30 @@ export function PaymentListTable({ payments }: { payments: any[] }) {
     const [rejectReason, setRejectReason] = useState("")
     const [loading, setLoading] = useState(false)
 
+    // Filters
+    const [searchQuery, setSearchQuery] = useState("")
+    const [statusFilter, setStatusFilter] = useState<string>("all")
+    const [methodFilter, setMethodFilter] = useState<string>("all")
+
+    const filteredPayments = useMemo(() => {
+        return payments.filter((payment) => {
+            const matchesSearch =
+                payment.request.requestNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                payment.request.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                payment.request.lpn.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (payment.reference || "").toLowerCase().includes(searchQuery.toLowerCase())
+
+            const matchesStatus = statusFilter === "all" || payment.status === statusFilter
+            const matchesMethod = methodFilter === "all" || payment.method === methodFilter
+
+            return matchesSearch && matchesStatus && matchesMethod
+        })
+    }, [payments, searchQuery, statusFilter, methodFilter])
+
+    const activeFilterCount =
+        (statusFilter !== "all" ? 1 : 0) +
+        (methodFilter !== "all" ? 1 : 0)
+
     const handleApprove = async () => {
         if (!selectedPayment) return
         setLoading(true)
@@ -33,7 +59,7 @@ export function PaymentListTable({ payments }: { payments: any[] }) {
             toast.success("Payment approved")
             setApproveOpen(false)
             setNotes("")
-            router.refresh() // Refresh server data
+            router.refresh()
         } catch (error: any) {
             toast.error(error.message || "Failed to approve payment")
         } finally {
@@ -52,7 +78,7 @@ export function PaymentListTable({ payments }: { payments: any[] }) {
             toast.success("Payment rejected")
             setRejectOpen(false)
             setRejectReason("")
-            router.refresh() // Refresh server data
+            router.refresh()
         } catch (error: any) {
             toast.error(error.message || "Failed to reject payment")
         } finally {
@@ -62,81 +88,145 @@ export function PaymentListTable({ payments }: { payments: any[] }) {
 
     const getMethodBadge = (method: string) => {
         const colors: Record<string, string> = {
-            GOVPAY: "bg-blue-500",
-            BANK_TRANSFER: "bg-green-500",
-            IPG: "bg-purple-500",
-            CASH: "bg-orange-500"
+            GOVPAY: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+            BANK_TRANSFER: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
+            IPG: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
+            CASH: "bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20"
         }
-        return <Badge className={colors[method] || ""}>{method}</Badge>
+        return <Badge variant="outline" className={colors[method] || ""}>{method.replace('_', ' ')}</Badge>
     }
 
     const getStatusBadge = (status: string) => {
-        const variants: Record<string, any> = {
-            PENDING_REVIEW: "warning",
-            COMPLETED: "default",
-            REJECTED: "destructive",
-            PENDING: "secondary"
+        const variants: Record<string, string> = {
+            PENDING_REVIEW: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
+            COMPLETED: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
+            REJECTED: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
+            PENDING: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
         }
-        return <Badge variant={variants[status] || "default"}>{status.replace('_', ' ')}</Badge>
+        return <Badge variant="outline" className={variants[status] || ""}>{status.replace('_', ' ')}</Badge>
     }
+
+    const paymentMethods = useMemo(() => {
+        const methods = new Set(payments.map(p => p.method))
+        return Array.from(methods)
+    }, [payments])
 
     return (
         <>
-            <div className="border rounded-md">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Request No</TableHead>
-                            <TableHead>Applicant</TableHead>
-                            <TableHead>LPN</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Method</TableHead>
-                            <TableHead>Reference</TableHead>
-                            <TableHead>Submitted</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {payments.length === 0 ? (
+            <div className="space-y-4">
+                <DataTableToolbar
+                    searchValue={searchQuery}
+                    onSearchChange={setSearchQuery}
+                    searchPlaceholder="Search by request no, applicant, LPN, or reference..."
+                >
+                    <FilterPopover activeCount={activeFilterCount} title="Filters">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label className="text-xs font-medium">Status</Label>
+                                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                    <SelectTrigger className="h-8">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Statuses</SelectItem>
+                                        <SelectItem value="PENDING_REVIEW">Pending Review</SelectItem>
+                                        <SelectItem value="COMPLETED">Completed</SelectItem>
+                                        <SelectItem value="REJECTED">Rejected</SelectItem>
+                                        <SelectItem value="PENDING">Pending</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-xs font-medium">Payment Method</Label>
+                                <Select value={methodFilter} onValueChange={setMethodFilter}>
+                                    <SelectTrigger className="h-8">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Methods</SelectItem>
+                                        {paymentMethods.map((method) => (
+                                            <SelectItem key={method} value={method}>
+                                                {method.replace('_', ' ')}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </FilterPopover>
+                </DataTableToolbar>
+
+                <div className="rounded-md border">
+                    <Table>
+                        <TableHeader>
                             <TableRow>
-                                <TableCell colSpan={9} className="text-center text-muted-foreground">
-                                    No payments found
-                                </TableCell>
+                                <TableHead>Request No</TableHead>
+                                <TableHead>Applicant</TableHead>
+                                <TableHead>LPN</TableHead>
+                                <TableHead>Amount</TableHead>
+                                <TableHead>Method</TableHead>
+                                <TableHead>Reference</TableHead>
+                                <TableHead>Submitted</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
-                        ) : (
-                            payments.map((payment) => (
-                                <TableRow key={payment.id}>
-                                    <TableCell className="font-medium">{payment.request.requestNo}</TableCell>
-                                    <TableCell>{payment.request.applicantName}</TableCell>
-                                    <TableCell>{payment.request.lpn}</TableCell>
-                                    <TableCell>{payment.amount ? `Rs. ${payment.amount}` : '-'}</TableCell>
-                                    <TableCell>{getMethodBadge(payment.method)}</TableCell>
-                                    <TableCell className="max-w-[150px] truncate">{payment.reference || '-'}</TableCell>
-                                    <TableCell>{format(new Date(payment.createdAt), 'MMM dd, yyyy')}</TableCell>
-                                    <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                                    <TableCell>
-                                        <div className="flex gap-2">
-                                            <Button variant="ghost" size="sm" onClick={() => { setSelectedPayment(payment); setDetailsOpen(true); }} title="View Details">
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
-                                            {payment.status === 'PENDING_REVIEW' && (
-                                                <>
-                                                    <Button variant="ghost" size="sm" className="text-green-600" onClick={() => { setSelectedPayment(payment); setApproveOpen(true); }} title="Approve">
-                                                        <Check className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button variant="ghost" size="sm" className="text-red-600" onClick={() => { setSelectedPayment(payment); setRejectOpen(true); }} title="Reject">
-                                                        <X className="h-4 w-4" />
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </div>
+                        </TableHeader>
+                        <TableBody>
+                            {filteredPayments.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={9} className="h-64">
+                                        <EmptyState
+                                            icon={DollarSign}
+                                            title="No payments found"
+                                            description={
+                                                searchQuery || activeFilterCount > 0
+                                                    ? "Try adjusting your search or filters."
+                                                    : "There are no payment submissions yet."
+                                            }
+                                        />
                                     </TableCell>
                                 </TableRow>
-                            ))
-                        )}
-                    </TableBody>
-                </Table>
+                            ) : (
+                                filteredPayments.map((payment) => (
+                                    <TableRow key={payment.id} className="group">
+                                        <TableCell className="font-medium">{payment.request.requestNo}</TableCell>
+                                        <TableCell>{payment.request.applicantName}</TableCell>
+                                        <TableCell>{payment.request.lpn}</TableCell>
+                                        <TableCell className="font-medium">{payment.amount ? `Rs. ${payment.amount}` : '-'}</TableCell>
+                                        <TableCell>{getMethodBadge(payment.method)}</TableCell>
+                                        <TableCell className="max-w-[150px] truncate">{payment.reference || '-'}</TableCell>
+                                        <TableCell>{format(new Date(payment.createdAt), 'MMM dd, yyyy')}</TableCell>
+                                        <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex gap-1 justify-end">
+                                                <Button variant="ghost" size="sm" onClick={() => { setSelectedPayment(payment); setDetailsOpen(true); }}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                {payment.status === 'PENDING_REVIEW' && (
+                                                    <>
+                                                        <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 hover:bg-green-50" onClick={() => { setSelectedPayment(payment); setApproveOpen(true); }}>
+                                                            <Check className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => { setSelectedPayment(payment); setRejectOpen(true); }}>
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))
+                            )}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div>
+                        Showing {filteredPayments.length} of {payments.length} payments
+                    </div>
+                </div>
             </div>
 
             {/* Payment Details Dialog */}
@@ -168,7 +258,7 @@ export function PaymentListTable({ payments }: { payments: any[] }) {
                             {selectedPayment.proofUrl && (
                                 <div>
                                     <strong>Payment Proof:</strong>
-                                    <img src={selectedPayment.proofUrl} alt="Payment proof" className="mt-2 max-w-full h-auto border rounded" />
+                                    <img src={selectedPayment.proofUrl} alt="Payment proof" className="mt-2 max-w-full h-auto border rounded-lg" />
                                 </div>
                             )}
                         </div>
