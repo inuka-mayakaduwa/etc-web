@@ -26,14 +26,14 @@ export default function AdminSidebarEnhanced({ children, permissions }: { childr
                             </div>
                         </div>
                     </SidebarHeader>
-                    
+
                     <SidebarContent>
                         <SidebarGroup>
                             <SidebarGroupLabel>Quick Actions</SidebarGroupLabel>
                             <SidebarGroupContent>
                                 <div className="px-3 py-2">
-                                    <Button 
-                                        variant="outline" 
+                                    <Button
+                                        variant="outline"
                                         className="w-full justify-start gap-2"
                                         onClick={() => {
                                             const event = new KeyboardEvent('keydown', {
@@ -108,11 +108,11 @@ export default function AdminSidebarEnhanced({ children, permissions }: { childr
                             </SidebarGroupContent>
                         </SidebarGroup>
                     </SidebarContent>
-                    
+
                     <SidebarFooter className="p-4 border-t">
                         <SidebarMenu>
                             <SidebarMenuItem>
-                                <SidebarMenuButton onClick={() => signOut({ callbackUrl: "/admin/login" })}>
+                                <SidebarMenuButton onClick={() => signOut({ callbackUrl: "/login" })}>
                                     <LogOut />
                                     <span>Log Out</span>
                                 </SidebarMenuButton>
@@ -120,7 +120,7 @@ export default function AdminSidebarEnhanced({ children, permissions }: { childr
                         </SidebarMenu>
                     </SidebarFooter>
                 </Sidebar>
-                
+
                 <SidebarInset className="flex-1">
                     <main className="p-6">
                         {children}

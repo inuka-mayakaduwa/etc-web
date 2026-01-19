@@ -130,6 +130,69 @@
                     "Disclaimer": "பொறுப்பு துறப்பு"
                 }
             }
+        },
+        "ETC": {
+            "Register": {
+                "Individual": {
+                    "Title": "தனிப்பட்ட பதிவு",
+                    "Description": "புதிய ETC குறிச்சொல்லைப் பெற உங்கள் விவரங்களை உள்ளிடவும்.",
+                    "ApplicantDetails": {
+                        "Title": "விண்ணப்பதாரர் விவரங்கள்",
+                        "FullName": {
+                            "Label": "முழு பெயர்",
+                            "Placeholder": "ஜான் டோ"
+                        },
+                        "NIC": {
+                            "Label": "தேசிய அடையாள அட்டை / கடவுச்சீட்டு",
+                            "Placeholder": "199012345678"
+                        },
+                        "Mobile": {
+                            "Label": "கையடக்க தொலைபேசி எண்",
+                            "Placeholder": "0771234567"
+                        },
+                        "Email": {
+                            "Label": "மின்னஞ்சல் (விரும்பினால்)",
+                            "Placeholder": "john@example.com"
+                        }
+                    },
+                    "VehicleDetails": {
+                        "Title": "வாகனம் மற்றும் சேவை",
+                        "LPN": {
+                            "Label": "வாகன பதிவு எண்",
+                            "Placeholder": "ABC-1234",
+                            "Description": "இடைவெளிகள் இன்றி உள்ளிடவும் (எ.கா. CAB-1234)"
+                        },
+                        "VehicleType": {
+                            "Label": "வாகன வகை",
+                            "Placeholder": "வகையைத் தேர்ந்தெடுக்கவும்"
+                        },
+                        "Location": {
+                            "Label": "நிறுவும் இடம்",
+                            "Placeholder": "இடத்தைத் தேர்ந்தெடுக்கவும்"
+                        }
+                    },
+                    "Preferences": {
+                        "Title": "முன்னுரிமைகள்",
+                        "SMS": "SMS மூலம் தெரிவிக்கவும்",
+                        "Email": "மின்னஞ்சல் மூலம் தெரிவிக்கவும்"
+                    },
+                    "Actions": {
+                        "Submit": "சமர்ப்பிக்கவும்",
+                        "Submitting": "சமர்ப்பிக்கப்படுகிறது..."
+                    },
+                    "Validation": {
+                        "EnglishOnly": "ஆங்கில எழுத்துக்களை மட்டும் பயன்படுத்தவும்",
+                        "NameMin": "Name must be at least 2 characters",
+                        "IDRequired": "Valid ID required",
+                        "MobileFormat": "Must be a valid 10-digit mobile number starting with 07",
+                        "EmailInvalid": "Invalid email",
+                        "LPNRequired": "License Plate Number required",
+                        "LPNFormat": "Invalid format. Use ABC-1234 or 12-1234",
+                        "SelectVehicle": "Select a vehicle type",
+                        "SelectLocation": "Select a location"
+                    }
+                }
+            }
         }
     }
 }

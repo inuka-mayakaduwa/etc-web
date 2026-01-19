@@ -3,8 +3,8 @@ import type { NextAuthConfig } from "next-auth"
 export const authConfig = {
     providers: [],
     pages: {
-        signIn: "/admin/login",
-        error: "/admin/login",
+        signIn: "/login",
+        error: "/login",
     },
     callbacks: {
         jwt({ token, user }) {

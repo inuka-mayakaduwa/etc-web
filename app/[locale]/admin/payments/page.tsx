@@ -12,7 +12,7 @@ import { DollarSign, Clock, CheckCircle, XCircle } from "lucide-react"
 export default async function PaymentsPage() {
     const session = await auth()
     if (!session?.user?.id) {
-        redirect("/admin/login")
+        redirect("/login")
     }
 
     const canView = await hasPermission(session.user.id, "etc.payment.view")

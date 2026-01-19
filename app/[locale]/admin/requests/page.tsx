@@ -11,7 +11,7 @@ import { prisma } from "@/lib/db"
 export default async function RequestsPage() {
     const session = await auth()
     if (!session?.user?.id) {
-        redirect("/admin/login")
+        redirect("/login")
     }
 
     const canView = await hasPermission(session.user.id, "etc.requests.view")

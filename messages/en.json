@@ -129,6 +129,69 @@
                     "Disclaimer": "Disclaimer"
                 }
             }
+        },
+        "ETC": {
+            "Register": {
+                "Individual": {
+                    "Title": "Individual Registration",
+                    "Description": "Enter your details to request a new ETC tag.",
+                    "ApplicantDetails": {
+                        "Title": "Applicant Details",
+                        "FullName": {
+                            "Label": "Full Name",
+                            "Placeholder": "John Doe"
+                        },
+                        "NIC": {
+                            "Label": "NIC / Passport",
+                            "Placeholder": "199012345678"
+                        },
+                        "Mobile": {
+                            "Label": "Mobile Number",
+                            "Placeholder": "0771234567"
+                        },
+                        "Email": {
+                            "Label": "Email (Optional)",
+                            "Placeholder": "john@example.com"
+                        }
+                    },
+                    "VehicleDetails": {
+                        "Title": "Vehicle & Service",
+                        "LPN": {
+                            "Label": "License Plate Number",
+                            "Placeholder": "ABC-1234",
+                            "Description": "Enter specific number without spaces (e.g. CAB-1234)"
+                        },
+                        "VehicleType": {
+                            "Label": "Vehicle Type",
+                            "Placeholder": "Select type"
+                        },
+                        "Location": {
+                            "Label": "Installation Location",
+                            "Placeholder": "Select location"
+                        }
+                    },
+                    "Preferences": {
+                        "Title": "Preferences",
+                        "SMS": "Notify via SMS",
+                        "Email": "Notify via Email"
+                    },
+                    "Actions": {
+                        "Submit": "Submit Request",
+                        "Submitting": "Submitting..."
+                    },
+                    "Validation": {
+                        "EnglishOnly": "English input only",
+                        "NameMin": "Name must be at least 2 characters",
+                        "IDRequired": "Valid ID required",
+                        "MobileFormat": "Must be a valid 10-digit mobile number starting with 07",
+                        "EmailInvalid": "Invalid email",
+                        "LPNRequired": "License Plate Number required",
+                        "LPNFormat": "Invalid format. Use ABC-1234 or 12-1234",
+                        "SelectVehicle": "Select a vehicle type",
+                        "SelectLocation": "Select a location"
+                    }
+                }
+            }
         }
     }
 }

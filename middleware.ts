@@ -16,7 +16,7 @@ export default auth((req) => {
     // Pathname might be /en/admin or /admin (if default locale)
     // Regex to check for /admin segment possibly prefixed by locale
     const isAdminRoute = /\/(?:[a-z]{2}\/)?admin/.test(nextUrl.pathname);
-    const isLoginPage = /\/(?:[a-z]{2}\/)?admin\/login/.test(nextUrl.pathname);
+    const isLoginPage = /\/(?:[a-z]{2}\/)?login/.test(nextUrl.pathname);
 
     if (isAdminRoute && !isLoginPage) {
         if (!isAuthenticated) {
@@ -52,7 +52,7 @@ export default auth((req) => {
             // If not, Next-Intl might define default.
 
             // Let's perform a simple check.
-            return NextResponse.redirect(new URL("/admin/login", nextUrl.origin));
+            return NextResponse.redirect(new URL("/login", nextUrl.origin));
         }
     }
 

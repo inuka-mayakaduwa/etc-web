@@ -129,6 +129,69 @@
                     "Disclaimer": "වගකීම් ප්‍රතික්ෂේප කිරීම"
                 }
             }
+        },
+        "ETC": {
+            "Register": {
+                "Individual": {
+                    "Title": "තනි පුද්ගල ලියාපදිංචිය",
+                    "Description": "නව ETC ටැගයක් ඉල්ලුම් කිරීමට ඔබේ විස්තර ඇතුළත් කරන්න.",
+                    "ApplicantDetails": {
+                        "Title": "අයදුම්කරුගේ විස්තර",
+                        "FullName": {
+                            "Label": "සම්පූර්ණ නම",
+                            "Placeholder": "ජෝන් ඩෝ"
+                        },
+                        "NIC": {
+                            "Label": "ජා.හැ. අංකය / විදේශ ගමන් බලපත්‍රය",
+                            "Placeholder": "199012345678"
+                        },
+                        "Mobile": {
+                            "Label": "ජංගම දුරකථන අංකය",
+                            "Placeholder": "0771234567"
+                        },
+                        "Email": {
+                            "Label": "විද්‍යුත් තැපෑල (විකල්ප)",
+                            "Placeholder": "john@example.com"
+                        }
+                    },
+                    "VehicleDetails": {
+                        "Title": "වාහන සහ සේවා විස්තර",
+                        "LPN": {
+                            "Label": "ලියාපදිංචි අංකය",
+                            "Placeholder": "ABC-1234",
+                            "Description": "හිස්තැන් නොමැතිව ඇතුළත් කරන්න (උදා: CAB-1234)"
+                        },
+                        "VehicleType": {
+                            "Label": "වාහන වර්ගය",
+                            "Placeholder": "වර්ගය තෝරන්න"
+                        },
+                        "Location": {
+                            "Label": "ස්ථාපනය කළ යුතු ස්ථානය",
+                            "Placeholder": "ස්ථානය තෝරන්න"
+                        }
+                    },
+                    "Preferences": {
+                        "Title": "අභිරුචි",
+                        "SMS": "SMS මගින් දැනුම් දෙනු ලැබීම",
+                        "Email": "විද්‍යුත් තැපෑල මගින් දැනුම් දෙනු ලැබීම"
+                    },
+                    "Actions": {
+                        "Submit": "ඉල්ලුම් කරන්න",
+                        "Submitting": "යොමු කරමින් පවතී..."
+                    },
+                    "Validation": {
+                        "EnglishOnly": "ඉංග්‍රීසි අකුරු පමණක් භාවිතා කරන්න",
+                        "NameMin": "Name must be at least 2 characters",
+                        "IDRequired": "Valid ID required",
+                        "MobileFormat": "Must be a valid 10-digit mobile number starting with 07",
+                        "EmailInvalid": "Invalid email",
+                        "LPNRequired": "License Plate Number required",
+                        "LPNFormat": "Invalid format. Use ABC-1234 or 12-1234",
+                        "SelectVehicle": "Select a vehicle type",
+                        "SelectLocation": "Select a location"
+                    }
+                }
+            }
         }
     }
 }
