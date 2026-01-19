@@ -20,7 +20,10 @@ interface Props {
     request: any; // Using any to avoid importing partial prisma types on client, strictly typing is better but verbose here
 }
 
+import { useTranslations } from 'next-intl';
+
 export function PaymentInterface({ request }: Props) {
+    const t = useTranslations('ETC.Payment');
     const router = useRouter();
     const [method, setMethod] = useState<PaymentMethod>('GOVPAY');
     const [reference, setReference] = useState('');
@@ -60,7 +63,7 @@ export function PaymentInterface({ request }: Props) {
                     await fetch(`/api/public/etc/registration/${request.requestNo}/payment-attempt/simulate-success`, {
                         method: 'POST'
                     });
-                    toast.success('Payment Successful!');
+                    toast.success(t('Success.Title'));
                 } else {
                     toast.success('Redirecting to Payment Gateway...');
                 }
@@ -78,12 +81,18 @@ export function PaymentInterface({ request }: Props) {
     };
 
     const handleCreateAttempt = () => {
-        setShowDemoModal(true);
+        if (method === 'IPG') {
+            submitPaymentAttempt('success');
+        } else if (method === 'GOVPAY') {
+            submitPaymentAttempt();
+        } else {
+            setShowDemoModal(true);
+        }
     };
 
     const handleDemoOutcome = (outcome: 'success' | 'failure') => {
         if (outcome === 'failure') {
-            toast.error("Payment Failed (Demo)");
+            toast.error(t('Demo.ToastFailed'));
             setShowDemoModal(false);
         } else {
             submitPaymentAttempt('success');
@@ -91,7 +100,14 @@ export function PaymentInterface({ request }: Props) {
     };
 
     const handleDeclare = async () => {
-        if (!reference) return toast.error('Please enter the reference number');
+        if (!reference) return toast.error(t('Declare.Error.Required'));
+
+        // Validate Reference: Starts with 9992025 or 9992026 and is 16 digits total
+        const isValidFormat = /^999(2025|2026)\d{9}$/.test(reference);
+
+        if (!isValidFormat) {
+            return toast.error(t('Declare.Error.InvalidFormat'));
+        }
 
         setLoading(true);
         try {
@@ -105,11 +121,8 @@ export function PaymentInterface({ request }: Props) {
 
             if (!res.ok) throw new Error(data.error);
 
-            toast.success('Payment submitted for review');
-            router.refresh(); // Should switch to Review state
-            // Stay on page to show Pending Verification status
-            // router.push(`/etc/track/${request.requestNo}`);
-
+            toast.success(t('Declare.Toast.Submitted'));
+            router.refresh();
         } catch (e: any) {
             toast.error(e.message);
         } finally {
@@ -137,20 +150,20 @@ export function PaymentInterface({ request }: Props) {
         return (
             <Card className="text-center border-t-4 border-t-green-500 shadow-sm">
                 <CardHeader>
-                    <CardTitle className="text-green-600">Payment Successful</CardTitle>
-                    <CardDescription>Your application is now being validated.</CardDescription>
+                    <CardTitle className="text-green-600">{t('Success.Title')}</CardTitle>
+                    <CardDescription>{t('Success.Description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <div className="flex flex-col items-center justify-center p-6 space-y-4">
                         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                             <span className="text-3xl">✅</span>
                         </div>
-                        <p>Thank you for your payment. Your request is now pending validation by our officers.</p>
+                        <p>{t('Success.Message')}</p>
                     </div>
                 </CardContent>
                 <CardFooter>
                     <Button variant="outline" className="w-full" onClick={() => router.push(`/etc/track/${request.requestNo}`)}>
-                        Track Status
+                        {t('Success.Button')}
                     </Button>
                 </CardFooter>
             </Card>
@@ -161,16 +174,16 @@ export function PaymentInterface({ request }: Props) {
         return (
             <Card className="text-center border-t-4 border-t-yellow-500 shadow-sm">
                 <CardHeader>
-                    <CardTitle>{activeAttempt?.method === 'GOVPAY' ? 'Pending verification' : 'Payment Under Review'}</CardTitle>
-                    <CardDescription>We are verifying your payment details.</CardDescription>
+                    <CardTitle>{activeAttempt?.method === 'GOVPAY' ? t('Review.PendingVerification') : t('Review.UnderReview')}</CardTitle>
+                    <CardDescription>{t('Review.Description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p>Ref: <span className="font-mono">{activeAttempt?.reference}</span></p>
-                    <p>Amount: LKR {activeAttempt?.amount}</p>
+                    <p>{t('Review.Ref')} <span className="font-mono">{activeAttempt?.reference}</span></p>
+                    <p>{t('Review.Amount')} LKR {activeAttempt?.amount}</p>
                 </CardContent>
                 <CardFooter>
                     <Button variant="outline" className="w-full" onClick={() => router.push(`/etc/track/${request.requestNo}`)}>
-                        Go to Tracking
+                        {t('Review.Button')}
                     </Button>
                 </CardFooter>
             </Card>
@@ -181,24 +194,24 @@ export function PaymentInterface({ request }: Props) {
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>Complete Payment</CardTitle>
+                    <CardTitle>{t('Declare.Title')}</CardTitle>
                     <CardDescription>
-                        You have selected <Badge variant="outline">{activeAttempt.method}</Badge>.
-                        Please pay <strong>LKR {activeAttempt.amount}</strong> and enter the reference below.
+                        {t('Declare.Selected')} <Badge variant="outline">{activeAttempt.method}</Badge>.
+                        <span dangerouslySetInnerHTML={{ __html: ' ' + t.raw('Declare.Instruction').replace('{amount}', activeAttempt.amount) }} />
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="bg-muted p-4 rounded text-sm">
-                        <p className="font-semibold">Bank Instructions (Example):</p>
-                        <p>Bank: Bank of Ceylon</p>
-                        <p>Acc No: 123-456-7890</p>
-                        <p>Ref: {request.requestNo}</p>
+                        <p className="font-semibold">{t('Declare.BankInfo.Title')}</p>
+                        <p>{t('Declare.BankInfo.Bank')}</p>
+                        <p>{t('Declare.BankInfo.AccNo')}</p>
+                        <p>{t('Review.Ref')} {request.requestNo}</p>
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Transaction Reference / Receipt No</Label>
+                        <Label>{t('Declare.Label')}</Label>
                         <Input
-                            placeholder="Enter reference number found on receipt"
+                            placeholder={t('Declare.Placeholder')}
                             value={reference}
                             onChange={e => setReference(e.target.value)}
                         />
@@ -206,11 +219,11 @@ export function PaymentInterface({ request }: Props) {
                 </CardContent>
                 <CardFooter className="flex justify-between">
                     <Button variant="ghost" onClick={handleChangeMethod} disabled={loading}>
-                        Change Method
+                        {t('Declare.Actions.ChangeMethod')}
                     </Button>
                     <Button onClick={handleDeclare} disabled={loading}>
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Submit Reference
+                        {t('Declare.Actions.Submit')}
                     </Button>
                 </CardFooter>
             </Card>
@@ -221,8 +234,8 @@ export function PaymentInterface({ request }: Props) {
         <>
             <Card>
                 <CardHeader>
-                    <CardTitle>Select Payment Method</CardTitle>
-                    <CardDescription>Registration Fee: <strong>LKR 5,000.00</strong></CardDescription>
+                    <CardTitle>{t('SelectMethod.Title')}</CardTitle>
+                    <CardDescription><span dangerouslySetInnerHTML={{ __html: t.raw('SelectMethod.FeeDescription') }} /></CardDescription>
                 </CardHeader>
                 <CardContent>
                     <RadioGroup value={method} onValueChange={(v) => setMethod(v as PaymentMethod)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -234,7 +247,7 @@ export function PaymentInterface({ request }: Props) {
                                 className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                             >
                                 <Building className="mb-3 h-6 w-6" />
-                                GovPay
+                                {t('SelectMethod.Methods.GovPay')}
                             </Label>
                         </div>
 
@@ -245,7 +258,7 @@ export function PaymentInterface({ request }: Props) {
                                 className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                             >
                                 <Banknote className="mb-3 h-6 w-6" />
-                                Bank Transfer
+                                {t('SelectMethod.Methods.BankTransfer')}
                             </Label>
                         </div>
 
@@ -256,7 +269,7 @@ export function PaymentInterface({ request }: Props) {
                                 className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
                             >
                                 <CreditCard className="mb-3 h-6 w-6" />
-                                Card Payment
+                                {t('SelectMethod.Methods.Card')}
                             </Label>
                         </div>
 
@@ -265,7 +278,7 @@ export function PaymentInterface({ request }: Props) {
                 <CardFooter>
                     <Button className="w-full" onClick={handleCreateAttempt} disabled={loading}>
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Continue with {method === 'IPG' ? 'Card Payment' : method}
+                        {t('SelectMethod.Button', { method: method === 'IPG' ? t('SelectMethod.Methods.Card') : method === 'GOVPAY' ? t('SelectMethod.Methods.GovPay') : t('SelectMethod.Methods.BankTransfer') })}
                     </Button>
                 </CardFooter>
             </Card>
@@ -273,9 +286,9 @@ export function PaymentInterface({ request }: Props) {
             <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Demo Payment Simulation</DialogTitle>
+                        <DialogTitle>{t('Demo.Title')}</DialogTitle>
                         <DialogDescription>
-                            This is a demo environment. Please select the outcome of the payment transaction.
+                            {t('Demo.Description')}
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid grid-cols-2 gap-4 py-4">
@@ -285,7 +298,7 @@ export function PaymentInterface({ request }: Props) {
                             onClick={() => handleDemoOutcome('success')}
                         >
                             <span className="text-2xl">✅</span>
-                            Simulate Success
+                            {t('Demo.Success')}
                         </Button>
                         <Button
                             variant="destructive"
@@ -293,7 +306,7 @@ export function PaymentInterface({ request }: Props) {
                             onClick={() => handleDemoOutcome('failure')}
                         >
                             <span className="text-2xl">❌</span>
-                            Simulate Failure
+                            {t('Demo.Failure')}
                         </Button>
                     </div>
                 </DialogContent>

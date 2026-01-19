@@ -39,7 +39,7 @@ export default async function TrackingPage({
                 <div className="text-center space-y-6">
                     <h1 className="text-3xl font-bold">Request Not Found</h1>
                     <p className="text-muted-foreground">Could not find a request with number: {requestNo}</p>
-                    <Link href="/etc/register">
+                    <Link href="/etc/register/individual">
                         <Button size="lg">Start New Registration</Button>
                     </Link>
                 </div>

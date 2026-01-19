@@ -326,7 +326,7 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
                                     <h2 className="text-2xl font-bold text-foreground">{t('Preferences.Title')}</h2>
                                 </div>
 
-                                <p className="text-base text-muted-foreground mb-6">Choose how you would like to receive important updates:</p>
+                                <p className="text-base text-muted-foreground mb-6">{t('Preferences.Description')}</p>
 
                                 <div className="flex flex-col sm:flex-row gap-8">
                                     <FormField

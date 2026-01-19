@@ -7,6 +7,16 @@
         "Theme": "තේමාව"
     },
     "Public": {
+        "Track": {
+            "Title": "ලියාපදිංචිය නිරීක්ෂණය කරන්න",
+            "Description": "ඔබගේ ලියාපදිංචි තත්ත්වය පරීක්ෂා කරන්න",
+            "InputPlaceholder": "RQ-xxxxx",
+            "Button": "නිරීක්ෂණය කරන්න",
+            "Error": {
+                "InvalidFormat": "වලංගු නොවන ආකෘතියකි. RQ-xxxxx විය යුතුය",
+                "Required": "ඉල්ලීම් අංකය අත්‍යවශ්‍ය වේ"
+            }
+        },
         "Landing": {
             "Navigation": {
                 "About": "අපි ගැන",
@@ -172,6 +182,7 @@
                     },
                     "Preferences": {
                         "Title": "අභිරුචි",
+                        "Description": "නැවත පිරවීම්, ගිණුම් අඩු කිරීම් සහ වෙනත් යාවත්කාලීන කිරීම් සඳහා:",
                         "SMS": "SMS මගින් දැනුම් දෙනු ලැබීම",
                         "Email": "විද්‍යුත් තැපෑල මගින් දැනුම් දෙනු ලැබීම"
                     },
@@ -191,6 +202,62 @@
                         "SelectLocation": "Select a location"
                     }
                 }
+            }
+        },
+        "Payment": {
+            "Success": {
+                "Title": "ගෙවීම සාර්ථකයි",
+                "Description": "ඔබගේ අයදුම්පත දැන් වලංගු කරමින් පවතී.",
+                "Message": "ස්තූතියි. ඔබගේ ඉල්ලීම දැන් අපගේ නිලධාරීන් විසින් පරීක්ෂා කරමින් පවතී.",
+                "Button": "තත්ත්වය නිරීක්ෂණය කරන්න"
+            },
+            "Review": {
+                "PendingVerification": "තහවුරු කිරීම අපේක්ෂිතයි",
+                "UnderReview": "ගෙවීම සමාලෝචනය යටතේ",
+                "Description": "අපි ඔබගේ ගෙවීම් විස්තර පරීක්ෂා කරමින් සිටිමු.",
+                "Ref": "යොමුව:",
+                "Amount": "මුදල:",
+                "Button": "නිරීක්ෂණය වෙත යන්න"
+            },
+            "Declare": {
+                "Title": "ගෙවීම සම්පූර්ණ කරන්න",
+                "Selected": "ඔබ තෝරාගෙන ඇත",
+                "Instruction": "කරුණාකර <strong>LKR {amount}</strong> ගෙවා යොමු අංකය පහත ඇතුළත් කරන්න.",
+                "BankInfo": {
+                    "Title": "බැංකු උපදෙස් (උදාහරණ):",
+                    "Bank": "බැංකුව: ලංකා බැංකුව",
+                    "AccNo": "ගිණුම් අංකය: 123-456-7890"
+                },
+                "Label": "ගනුදෙනු යොමුව / රිසිට්පත් අංකය",
+                "Placeholder": "රිසිට්පතේ ඇති යොමු අංකය ඇතුළත් කරන්න",
+                "Actions": {
+                    "ChangeMethod": "ක්‍රමය වෙනස් කරන්න",
+                    "Submit": "යොමු අංකය ඉදිරිපත් කරන්න"
+                },
+                "Error": {
+                    "Required": "කරුණාකර රිසිට්පත් අංකය ඇතුළත් කරන්න",
+                    "InvalidFormat": "වලංගු නොවන රිසිට්පත් අංකයකි. 9992025 හෝ 9992026 න් ආරම්භ වී ඉලක්කම් 16 කින් සමන්විත විය යුතුය."
+                },
+                "Toast": {
+                    "Submitted": "ගෙවීම සමාලෝචනය සඳහා ඉදිරිපත් කරන ලදී"
+                }
+            },
+            "SelectMethod": {
+                "Title": "ගෙවීම් ක්‍රමය තෝරන්න",
+                "FeeDescription": "ලියාපදිංචි ගාස්තුව: <strong>LKR 5,000.00</strong>",
+                "Methods": {
+                    "GovPay": "GovPay",
+                    "BankTransfer": "බැංකු හුවමාරුව",
+                    "Card": "කාඩ්පත් ගෙවීම"
+                },
+                "Button": "{method} සමඟ ඉදිරියට යන්න"
+            },
+            "Demo": {
+                "Title": "Demo Payment Simulation",
+                "Description": "This is a demo environment. Please select the outcome of the payment transaction.",
+                "Success": "Simulate Success",
+                "Failure": "Simulate Failure",
+                "ToastFailed": "Payment Failed (Demo)"
             }
         }
     }

@@ -23,7 +23,7 @@ export default function RegistrationStartPage() {
                             <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                 <User size={24} />
                             </div>
-                            <CardTitle className="text-2xl">Individual Registration</CardTitle>
+                            <CardTitle className="text-2xl">Single Vehicle ETC Registration</CardTitle>
                             <CardDescription>
                                 For personal vehicles owned by individuals.
                             </CardDescription>

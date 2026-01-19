@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UserPlus, LogIn, MapPin } from "lucide-react"
 import { useTranslations } from "next-intl"
+import Link from "next/link"
 
 export default function QuickActions() {
   const t = useTranslations("Public.Landing.QuickActions")
@@ -48,9 +49,18 @@ export default function QuickActions() {
                 </div>
                 <h3 className="text-xl font-bold text-foreground mb-3">{t(`${action.key}.Title`)}</h3>
                 <p className="text-sm text-foreground/70 mb-6 leading-relaxed">{t(`${action.key}.Description`)}</p>
-                <Button className="w-full bg-accent hover:bg-accent/90 text-white font-semibold rounded-lg transition-colors">
-                  {t(`${action.key}.Button`)}
-                </Button>
+                <Link
+                  href={
+                    action.key === "Register" ? "/etc/register/individual" :
+                      action.key === "Login" ? "/etc/login" :
+                        "/etc/track"
+                  }
+                  className="w-full"
+                >
+                  <Button className="w-full bg-accent hover:bg-accent/90 text-white font-semibold rounded-lg transition-colors">
+                    {t(`${action.key}.Button`)}
+                  </Button>
+                </Link>
               </Card>
             )
           })}

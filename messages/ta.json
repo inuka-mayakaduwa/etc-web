@@ -7,6 +7,16 @@
         "Theme": "தீம்"
     },
     "Public": {
+        "Track": {
+            "Title": "பதிவைக் கண்காணிக்கவும்",
+            "Description": "உங்கள் பதிவு நிலையைச் சரிபார்க்கவும்",
+            "InputPlaceholder": "RQ-xxxxx",
+            "Button": "கண்காணிக்கவும்",
+            "Error": {
+                "InvalidFormat": "செல்லுபடியற்ற வடிவம். RQ-xxxxx ஆக இருக்க வேண்டும்",
+                "Required": "கோரிக்கை எண் தேவை"
+            }
+        },
         "Landing": {
             "Navigation": {
                 "About": "பற்றி",
@@ -173,6 +183,7 @@
                     },
                     "Preferences": {
                         "Title": "முன்னுரிமைகள்",
+                        "Description": "டாப் அப், கணக்கு கழிவுகள் மற்றும் பிற புதுப்பிப்புகளுக்கு:",
                         "SMS": "SMS மூலம் தெரிவிக்கவும்",
                         "Email": "மின்னஞ்சல் மூலம் தெரிவிக்கவும்"
                     },
@@ -192,6 +203,62 @@
                         "SelectLocation": "Select a location"
                     }
                 }
+            }
+        },
+        "Payment": {
+            "Success": {
+                "Title": "கட்டணம் செலுத்தல் வெற்றிகரமானது",
+                "Description": "உங்கள் விண்ணப்பம் இப்போது சரிபார்க்கப்படுகிறது.",
+                "Message": "கட்டணம் செலுத்தியதற்கு நன்றி. உங்கள் கோரிக்கை இப்போது எங்கள் அதிகாரிகளால் சரிபார்க்கப்படுகிறது.",
+                "Button": "நிலையை கண்காணிக்கவும்"
+            },
+            "Review": {
+                "PendingVerification": "சரிபார்ப்பு நிலுவையில் உள்ளது",
+                "UnderReview": "கட்டணம் மதிப்பாய்வில் உள்ளது",
+                "Description": "உங்கள் கட்டண விவரங்களை நாங்கள் சரிபார்க்கிறோம்.",
+                "Ref": "குறிப்பு:",
+                "Amount": "தொகை:",
+                "Button": "கண்காணிப்புக்குச் செல்லவும்"
+            },
+            "Declare": {
+                "Title": "கட்டணத்தை நிறைவு செய்யவும்",
+                "Selected": "நீங்கள் தேர்ந்தெடுத்துள்ளீர்கள்",
+                "Instruction": "தயவுசெய்து <strong>LKR {amount}</strong> செலுத்தி, கீழே உள்ள குறிப்பு எண்ணை உள்ளிடவும்.",
+                "BankInfo": {
+                    "Title": "வங்கி அறிவுறுத்தல்கள் (உதாரணம்):",
+                    "Bank": "வங்கி: இலங்கை வங்கி",
+                    "AccNo": "கணக்கு எண்: 123-456-7890"
+                },
+                "Label": "பரிவர்த்தனை குறிப்பு / ரசீது எண்",
+                "Placeholder": "ரசீதில் உள்ள குறிப்பு எண்ணை உள்ளிடவும்",
+                "Actions": {
+                    "ChangeMethod": "முறையை மாற்றவும்",
+                    "Submit": "குறிப்பைச் சமர்ப்பிக்கவும்"
+                },
+                "Error": {
+                    "Required": "தயவுசெய்து ரசீது எண்ணை உள்ளிடவும்",
+                    "InvalidFormat": "செல்லுபடியற்ற ரசீது எண். 9992025 அல்லது 9992026 இல் தொடங்கி 16 இலக்கங்களைக் கொண்டிருக்க வேண்டும்."
+                },
+                "Toast": {
+                    "Submitted": "கட்டணம் மதிப்பாய்வுக்காக சமர்ப்பிக்கப்பட்டது"
+                }
+            },
+            "SelectMethod": {
+                "Title": "கட்டண முறையைத் தேர்ந்தெடுக்கவும்",
+                "FeeDescription": "பதிவுக் கட்டணம்: <strong>LKR 5,000.00</strong>",
+                "Methods": {
+                    "GovPay": "GovPay",
+                    "BankTransfer": "வங்கி பரிமாற்றம்",
+                    "Card": "அட்டை மூலம் பணம் செலுத்துதல்"
+                },
+                "Button": "{method} உடன் தொடரவும்"
+            },
+            "Demo": {
+                "Title": "Demo Payment Simulation",
+                "Description": "This is a demo environment. Please select the outcome of the payment transaction.",
+                "Success": "Simulate Success",
+                "Failure": "Simulate Failure",
+                "ToastFailed": "Payment Failed (Demo)"
             }
         }
     }

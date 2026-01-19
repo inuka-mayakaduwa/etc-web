@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 export default function CTA() {
     const t = useTranslations("Public.Landing.CTA")
@@ -15,13 +16,15 @@ export default function CTA() {
                 <p className="text-lg text-white/90 max-w-2xl mx-auto mb-8">
                     {t("Description")}
                 </p>
-                <Button
-                    size="lg"
-                    variant="secondary"
-                    className="bg-white text-accent hover:bg-white/90 font-bold"
-                >
-                    {t("Button")}
-                </Button>
+                <Link href="/etc/register">
+                    <Button
+                        size="lg"
+                        variant="secondary"
+                        className="bg-white text-accent hover:bg-white/90 font-bold"
+                    >
+                        {t("Button")}
+                    </Button>
+                </Link>
             </div>
         </section>
     )

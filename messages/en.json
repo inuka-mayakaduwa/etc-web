@@ -7,6 +7,16 @@
         "Theme": "Theme"
     },
     "Public": {
+        "Track": {
+            "Title": "Track Your Request",
+            "Description": "Enter your request number to check the status.",
+            "InputPlaceholder": "RQ-xxxxx",
+            "Button": "Track Request",
+            "Error": {
+                "InvalidFormat": "Invalid format. Must be RQ-xxxxx",
+                "Required": "Request number is required"
+            }
+        },
         "Landing": {
             "Navigation": {
                 "About": "About",
@@ -133,7 +143,7 @@
         "ETC": {
             "Register": {
                 "Individual": {
-                    "Title": "Individual Registration",
+                    "Title": "Single Vehicle ETC Registration",
                     "Description": "Enter your details to request a new ETC tag.",
                     "ApplicantDetails": {
                         "Title": "Applicant Details",
@@ -172,6 +182,7 @@
                     },
                     "Preferences": {
                         "Title": "Preferences",
+                        "Description": "For Top Ups, Account Deductions and Other Updates:",
                         "SMS": "Notify via SMS",
                         "Email": "Notify via Email"
                     },
@@ -191,6 +202,62 @@
                         "SelectLocation": "Select a location"
                     }
                 }
+            }
+        },
+        "Payment": {
+            "Success": {
+                "Title": "Payment Successful",
+                "Description": "Your application is now being validated.",
+                "Message": "Thank you for your payment. Your request is now pending validation by our officers.",
+                "Button": "Track Status"
+            },
+            "Review": {
+                "PendingVerification": "Pending verification",
+                "UnderReview": "Payment Under Review",
+                "Description": "We are verifying your payment details.",
+                "Ref": "Ref:",
+                "Amount": "Amount:",
+                "Button": "Go to Tracking"
+            },
+            "Declare": {
+                "Title": "Complete Payment",
+                "Selected": "You have selected",
+                "Instruction": "Please pay <strong>LKR {amount}</strong> and enter the reference below.",
+                "BankInfo": {
+                    "Title": "Bank Instructions (Example):",
+                    "Bank": "Bank: Bank of Ceylon",
+                    "AccNo": "Acc No: 123-456-7890"
+                },
+                "Label": "Transaction Reference / Receipt No",
+                "Placeholder": "Enter reference number found on receipt",
+                "Actions": {
+                    "ChangeMethod": "Change Method",
+                    "Submit": "Submit Reference"
+                },
+                "Error": {
+                    "Required": "Please enter the receipt number",
+                    "InvalidFormat": "Invalid receipt number. Must start with 9992025 or 9992026 and contain 16 digits."
+                },
+                "Toast": {
+                    "Submitted": "Payment submitted for review"
+                }
+            },
+            "SelectMethod": {
+                "Title": "Select Payment Method",
+                "FeeDescription": "Registration Fee: <strong>LKR 5,000.00</strong>",
+                "Methods": {
+                    "GovPay": "GovPay",
+                    "BankTransfer": "Bank Transfer",
+                    "Card": "Card Payment"
+                },
+                "Button": "Continue with {method}"
+            },
+            "Demo": {
+                "Title": "Demo Payment Simulation",
+                "Description": "This is a demo environment. Please select the outcome of the payment transaction.",
+                "Success": "Simulate Success",
+                "Failure": "Simulate Failure",
+                "ToastFailed": "Payment Failed (Demo)"
             }
         }
     }

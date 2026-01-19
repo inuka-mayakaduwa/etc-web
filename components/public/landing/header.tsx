@@ -43,7 +43,7 @@ export default function Header() {
                 <div className="flex items-center gap-2 min-w-0">
                     <Link href="/" className="flex items-center gap-2 transition-all duration-500 hover:scale-105 flex-shrink-0">
                         <img
-                            src="/assets/logo.jpg"
+                            src="/assets/expressway.png"
                             alt="Logo"
                             className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
                         />
@@ -77,7 +77,7 @@ export default function Header() {
 
                     <div className="flex gap-1 sm:gap-2">
                         <Link
-                            href="/login"
+                            href="/etc/login"
                             className={cn(
                                 "px-3 sm:px-6 py-2 rounded-full font-bold text-xs sm:text-sm transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.3)] whitespace-nowrap",
                                 scrolled
@@ -88,7 +88,7 @@ export default function Header() {
                             {tCommon("Login")}
                         </Link>
                         <Link
-                            href="/register"
+                            href="/etc/register/individual"
                             className="px-3 sm:px-6 py-2 rounded-full bg-accent text-white font-bold text-xs sm:text-sm hover:bg-accent/90 transition-all duration-300 shadow-lg whitespace-nowrap"
                         >
                             {tCommon("Register")}

@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import { ChevronRight } from "lucide-react"
+import Link from "next/link"
 
 export default function Hero() {
   const t = useTranslations("Public.Landing.Hero")
@@ -26,19 +27,23 @@ export default function Hero() {
               {t("Subtitle")}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6 pb-8 md:pb-0">
-              <Button
-                size="lg"
-                className="bg-accent hover:bg-accent/90 text-white font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                {t("GetStarted")} <ChevronRight size={20} />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold bg-transparent w-full sm:w-auto"
-              >
-                {t("LearnMore")}
-              </Button>
+              <Link href="/etc/register/individual">
+                <Button
+                  size="lg"
+                  className="bg-accent hover:bg-accent/90 text-white font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  {t("GetStarted")} <ChevronRight size={20} />
+                </Button>
+              </Link>
+              <Link href="#about">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 font-semibold bg-transparent w-full sm:w-auto"
+                >
+                  {t("LearnMore")}
+                </Button>
+              </Link>
             </div>
           </div>
 
