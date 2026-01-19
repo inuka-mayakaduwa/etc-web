@@ -1,0 +1,676 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+/* ---------------------------------------------------------
+   Enums
+--------------------------------------------------------- */
+
+enum EtcRequestType {
+  NEW_INDIVIDUAL
+  NEW_COMPANY
+  ADD_VEHICLE_EXISTING_USER
+  ADD_VEHICLE_EXISTING_COMPANY
+  REPLACE_TAG
+}
+
+enum RequestChannel {
+  WEB
+  COUNTER
+  CALLCENTER
+  OTHER
+}
+
+enum ScheduleMode {
+  USER_PICKED
+  STAFF_ASSIGNED
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  RESCHEDULED
+  CANCELLED
+  MISSED
+  COMPLETED
+}
+
+enum PaymentMethod {
+  GOVPAY
+  BANK_TRANSFER
+  IPG
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  PENDING_REVIEW
+  COMPLETED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum InstallationStatus {
+  PENDING
+  INSTALLED
+  FAILED
+}
+
+enum ProvisionStatus {
+  PENDING
+  CREATED
+  FAILED
+}
+
+
+enum AuditAction {
+  REQUEST_CREATED
+  REQUEST_UPDATED
+  STATUS_CHANGED
+  ASSIGNED_CHANGED
+  ALLOW_EDIT_CHANGED
+  PAYMENT_ATTEMPT_CREATED
+  PAYMENT_STATUS_CHANGED
+  APPOINTMENT_ATTEMPT_CREATED
+  APPOINTMENT_STATUS_CHANGED
+  INSTALLATION_UPDATED
+  PROVISIONING_UPDATED
+  COMMENT_ADDED
+}
+
+enum CommentVisibility {
+  INTERNAL_ONLY
+  INTERNAL_AND_CUSTOMER
+}
+
+/* ---------------------------------------------------------
+   Shared lookup (use this also in master Vehicle table)
+--------------------------------------------------------- */
+
+model VehicleType {
+  id     String  @id @default(uuid()) @db.Uuid
+  code   String  @unique @db.VarChar(40) // CAR, TRUCK, etc.
+  label  String  @db.VarChar(100)
+  active Boolean @default(true)
+
+  // Requests using this type
+  requests ETCRegistrationRequest[]
+
+  @@index([active])
+}
+
+/* ---------------------------------------------------------
+   Installation Locations + Optional Slot Capacity
+--------------------------------------------------------- */
+
+model InstallationLocation {
+  id        String  @id @default(uuid()) @db.Uuid
+  code      String  @unique @db.VarChar(60)
+  name      String  @db.VarChar(120)
+  address   String? @db.VarChar(255)
+  contactNo String? @db.VarChar(30)
+
+  geoLat Float?
+  geoLng Float?
+
+  active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requestPrefs ETCRegistrationRequest[] @relation("PreferredLocation")
+  appointments RequestAppointmentAttempt[]
+  access       SystemUserLocationAccess[]
+
+  // Advanced appointment configuration
+  weeklySchedules LocationWeeklySchedule[]
+  capacityRules   LocationCapacityRule[]
+  calendarBlocks  LocationCalendarBlock[]
+  slotConfig      LocationSlotConfig?
+
+  @@index([active])
+  @@index([code])
+}
+
+/* ---------------------------------------------------------
+   Advanced Appointment Configuration
+--------------------------------------------------------- */
+
+model LocationWeeklySchedule {
+  id         String @id @default(uuid()) @db.Uuid
+  locationId String @db.Uuid
+  location   InstallationLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  dayOfWeek  Int    // 0-6 (Sunday = 0)
+  
+  // null values mean "closed on this day"
+  openTime   String?  @db.VarChar(5)  // "09:00" 
+  closeTime  String?  @db.VarChar(5)  // "17:00"
+  
+  isOpen     Boolean  @default(true)
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([locationId, dayOfWeek])
+  @@index([locationId, dayOfWeek])
+}
+
+model LocationCapacityRule {
+  id         String @id @default(uuid()) @db.Uuid
+  locationId String @db.Uuid
+  location   InstallationLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  // Optional filters - if null, applies to all
+  dayOfWeek  Int?   // null = all days, 0-6 = specific day
+  startTime  String? @db.VarChar(5)  // "09:00" - null = from open
+  endTime    String? @db.VarChar(5)  // "12:00" - null = until close
+  
+  capacity   Int    @default(1)  // Parallel appointments
+  
+  priority   Int    @default(0)  // Higher priority rules override lower ones
+  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([locationId, priority])
+  @@index([locationId, dayOfWeek])
+}
+
+model LocationCalendarBlock {
+  id          String @id @default(uuid()) @db.Uuid
+  locationId  String @db.Uuid
+  location    InstallationLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  blockType   String @db.VarChar(20)  // FULL_DAY, TIME_RANGE
+  
+  // For FULL_DAY
+  blockDate   DateTime?  @db.Date
+  
+  // For TIME_RANGE
+  startAt     DateTime?
+  endAt       DateTime?
+  
+  reason      String?    @db.VarChar(255)
+  
+  createdById String?    @db.Uuid
+  createdBy   SystemUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([locationId, blockDate])
+  @@index([locationId, startAt, endAt])
+}
+
+model LocationSlotConfig {
+  id               String @id @default(uuid()) @db.Uuid
+  locationId       String @unique @db.Uuid
+  location         InstallationLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  
+  serviceDuration  Int    @default(60)  // Service duration in minutes (also determines slot intervals)
+  
+  // Buffer settings
+  bufferBefore     Int    @default(0)   // Minutes buffer before service
+  bufferAfter      Int    @default(0)   // Minutes buffer after service
+  
+  // Booking window
+  minAdvanceHours  Int    @default(24)  // Min hours in advance
+  maxAdvanceDays   Int    @default(30)  // Max days in advance
+  
+  updatedAt        DateTime @updatedAt
+}
+
+/* ---------------------------------------------------------
+   Dynamic Status Engine
+--------------------------------------------------------- */
+
+model RequestStatus {
+  id         String  @id @default(uuid()) @db.Uuid
+  code       String  @unique @db.VarChar(80)  // SUBMITTED, etc.
+  label      String  @db.VarChar(120)
+  category   String  @db.VarChar(40)          // OPEN, IN_PROGRESS, DONE, FAILED
+  orderIndex Int     @default(0)
+
+  isTerminal Boolean @default(false)
+  isEditable Boolean @default(false) // if true, allowEditRequest can be enabled in this status
+  active     Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requests       ETCRegistrationRequest[]
+  transitionsFrom RequestStatusTransition[] @relation("StatusFrom")
+  transitionsTo   RequestStatusTransition[] @relation("StatusTo")
+  accessControls  SystemUserStatusAccess[]
+
+  @@index([active])
+  @@index([orderIndex])
+}
+
+model RequestStatusTransition {
+  id            String @id @default(uuid()) @db.Uuid
+
+  fromStatusId  String @db.Uuid
+  toStatusId    String @db.Uuid
+
+  fromStatus    RequestStatus @relation("StatusFrom", fields: [fromStatusId], references: [id], onDelete: Cascade)
+  toStatus      RequestStatus @relation("StatusTo", fields: [toStatusId], references: [id], onDelete: Cascade)
+
+  // Permission required to do this transition (optional)
+  requiredPermissionId String? @db.Uuid
+  requiredPermission   SystemPermission? @relation(fields: [requiredPermissionId], references: [id], onDelete: SetNull)
+
+  requiresComment Boolean @default(false)
+  active          Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  @@unique([fromStatusId, toStatusId])
+  @@index([active])
+}
+
+/* ---------------------------------------------------------
+   System Users (Admins/Officers/Installers/Finance) + OTP auth
+--------------------------------------------------------- */
+
+model SystemUser {
+  id      String  @id @default(uuid()) @db.Uuid
+  name    String  @db.VarChar(120)
+  email   String  @unique @db.VarChar(150)
+  mobile  String  @unique @db.VarChar(30)
+  active  Boolean @default(true)
+
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Auth
+  otps SystemUserOtp[]
+
+  // Roles & permissions
+  userRoles SystemUserRole[]
+  directPermissions SystemUserPermission[]
+  locationAccess SystemUserLocationAccess[]
+  statusAccess   SystemUserStatusAccess[]
+
+  // Request operations
+  assignedRequests ETCRegistrationRequest[] @relation("AssignedOfficer")
+  verifiedPayments RequestPaymentAttempt[]  @relation("PaymentVerifiedBy")
+  createdAppointments RequestAppointmentAttempt[] @relation("AppointmentCreatedBy")
+
+  editedAllowRequests ETCRegistrationRequest[] @relation("AllowEditUpdatedBy")
+
+  auditLogs RequestAuditLog[]
+  comments  RequestComment[]
+
+  installations ETCRegistrationRequest[] @relation("InstalledBy")
+  calendarBlocks LocationCalendarBlock[]
+
+  @@index([active])
+}
+
+model SystemUserOtp {
+  id           String   @id @default(uuid()) @db.Uuid
+  systemUserId String   @db.Uuid
+  systemUser   SystemUser @relation(fields: [systemUserId], references: [id], onDelete: Cascade)
+
+  // Store HASH only (never plaintext)
+  otpHash      String   @db.VarChar(255)
+
+  expiresAt    DateTime
+  usedAt       DateTime?
+  requestedAt  DateTime @default(now())
+
+  requestIp    String?  @db.VarChar(80)
+
+  @@index([systemUserId, expiresAt])
+  @@index([usedAt])
+}
+
+model SystemRole {
+  id        String @id @default(uuid()) @db.Uuid
+  name      String @unique @db.VarChar(120)
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  rolePermissions SystemRolePermission[]
+  userRoles       SystemUserRole[]
+
+  @@index([active])
+}
+
+model SystemPermission {
+  id          String @id @default(uuid()) @db.Uuid
+  node        String @unique @db.VarChar(180) // etc.request.status.change, etc.request.edit.enable, etc.
+  description String? @db.VarChar(255)
+  active      Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  rolePermissions SystemRolePermission[]
+  userPermissions SystemUserPermission[]
+  requiredByTransitions RequestStatusTransition[]
+
+  @@index([active])
+}
+
+model SystemRolePermission {
+  id            String @id @default(uuid()) @db.Uuid
+  roleId        String @db.Uuid
+  permissionId  String @db.Uuid
+
+  role          SystemRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission    SystemPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+model SystemUserRole {
+  id           String @id @default(uuid()) @db.Uuid
+  systemUserId String @db.Uuid
+  roleId       String @db.Uuid
+
+  systemUser   SystemUser @relation(fields: [systemUserId], references: [id], onDelete: Cascade)
+  role         SystemRole @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([systemUserId, roleId])
+}
+
+model SystemUserPermission {
+  id           String @id @default(uuid()) @db.Uuid
+  systemUserId String @db.Uuid
+  permissionId String @db.Uuid
+
+  systemUser   SystemUser @relation(fields: [systemUserId], references: [id], onDelete: Cascade)
+  permission   SystemPermission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([systemUserId, permissionId])
+}
+
+model SystemUserLocationAccess {
+  id           String @id @default(uuid()) @db.Uuid
+  systemUserId String @db.Uuid
+  locationId   String @db.Uuid
+
+  systemUser   SystemUser @relation(fields: [systemUserId], references: [id], onDelete: Cascade)
+  location     InstallationLocation @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([systemUserId, locationId])
+}
+
+model SystemUserStatusAccess {
+  id           String @id @default(uuid()) @db.Uuid
+  systemUserId String @db.Uuid
+  statusId     String @db.Uuid
+
+  systemUser   SystemUser @relation(fields: [systemUserId], references: [id], onDelete: Cascade)
+  status       RequestStatus @relation(fields: [statusId], references: [id], onDelete: Cascade)
+
+  @@unique([systemUserId, statusId])
+}
+
+/* ---------------------------------------------------------
+   Primary Request (1 applicant + 1 vehicle + optional company)
+--------------------------------------------------------- */
+
+model ETCRegistrationRequest {
+  id        String @id @default(uuid()) @db.Uuid
+
+  requestNo String @unique @db.VarChar(40)
+
+  requestType EtcRequestType
+  channel     RequestChannel @default(WEB)
+
+  submittedAt DateTime @default(now())
+
+  // Dynamic workflow
+  currentStatusId String @db.Uuid
+  currentStatus   RequestStatus @relation(fields: [currentStatusId], references: [id], onDelete: Restrict)
+
+  // Assignment
+  assignedOfficerId String? @db.Uuid
+  assignedOfficer   SystemUser? @relation("AssignedOfficer", fields: [assignedOfficerId], references: [id], onDelete: SetNull)
+
+  // Preferred location (optional)
+  preferredLocationId String? @db.Uuid
+  preferredLocation   InstallationLocation? @relation("PreferredLocation", fields: [preferredLocationId], references: [id], onDelete: SetNull)
+
+  priority Int @default(0)
+
+  // Allow edit toggle (admin only, only in editable statuses)
+  allowEditRequest    Boolean @default(false)
+  allowEditUpdatedById String? @db.Uuid
+  allowEditUpdatedBy   SystemUser? @relation("AllowEditUpdatedBy", fields: [allowEditUpdatedById], references: [id], onDelete: SetNull)
+  allowEditUpdatedAt  DateTime?
+
+  locked Boolean @default(false)
+  notes  String? @db.VarChar(1000)
+
+  // Applicant (inline)
+  applicantName        String  @db.VarChar(120)
+  applicantNICOrPassport String @db.VarChar(40)
+  applicantMobile      String  @db.VarChar(30)
+  applicantEmail       String? @db.VarChar(150)
+
+  notifySMS   Boolean @default(true)
+  notifyEmail Boolean @default(false)
+
+  // Company (inline, nullable)
+  companyName    String? @db.VarChar(180)
+  brn            String? @db.VarChar(60)
+  companyAddress String? @db.VarChar(255)
+
+  // Vehicle (inline)
+  lpn           String @db.VarChar(25)
+  vehicleTypeId String @db.Uuid
+  vehicleType   VehicleType @relation(fields: [vehicleTypeId], references: [id], onDelete: Restrict)
+
+  // Optional link for "existing user adding vehicle"
+  matchedMasterUserId String? @db.Uuid
+  // You can also keep matchedMasterCompanyId / matchedMasterVehicleId if needed
+
+  // Current active attempts (pointers)
+  activePaymentAttemptId     String? @db.Uuid
+  activePaymentAttempt       RequestPaymentAttempt? @relation("ActivePaymentAttempt", fields: [activePaymentAttemptId], references: [id], onDelete: SetNull)
+
+  activeAppointmentAttemptId String? @db.Uuid
+  activeAppointmentAttempt   RequestAppointmentAttempt? @relation("ActiveAppointmentAttempt", fields: [activeAppointmentAttemptId], references: [id], onDelete: SetNull)
+
+  // Installation overall (current state summary)
+  installationStatus InstallationStatus @default(PENDING)
+  installedAt        DateTime?
+  installedById      String? @db.Uuid
+  installedBy        SystemUser? @relation("InstalledBy", fields: [installedById], references: [id], onDelete: SetNull)
+  rfidValue          String? @unique @db.VarChar(80) // unique once installed
+  installationRemarks String? @db.VarChar(1000)
+
+  // Provisioning (create master records only when ready)
+  provisionStatus ProvisionStatus @default(PENDING)
+  provisionedAt   DateTime?
+  provisionError  String? @db.VarChar(2000)
+
+  // Store master IDs only (avoid clashes with your existing master schema)
+  masterUserId    String? @db.Uuid
+  masterCompanyId String? @db.Uuid
+  masterVehicleId String? @db.Uuid
+  masterWalletId  String? @db.Uuid
+
+  // Relations
+  paymentAttempts     RequestPaymentAttempt[]     @relation("RequestPaymentAttempts")
+  appointmentAttempts RequestAppointmentAttempt[] @relation("RequestAppointmentAttempts")
+  auditLogs           RequestAuditLog[]
+  comments            RequestComment[]
+  scheduleLinks       AppointmentAccessLink[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([currentStatusId])
+  @@index([assignedOfficerId])
+  @@index([preferredLocationId])
+  @@index([vehicleTypeId])
+  @@index([lpn])
+  @@index([submittedAt])
+}
+
+/* ---------------------------------------------------------
+   Payment Attempts (history + retries)
+--------------------------------------------------------- */
+
+model RequestPaymentAttempt {
+  id        String @id @default(uuid()) @db.Uuid
+
+  requestId String @db.Uuid
+  request   ETCRegistrationRequest @relation("RequestPaymentAttempts", fields: [requestId], references: [id], onDelete: Cascade)
+
+  attemptNo Int
+
+  method    PaymentMethod
+  status    PaymentStatus @default(PENDING)
+
+  amount    Decimal? @db.Decimal(12, 2)
+
+  reference String? @db.VarChar(120) // govpay ref, bank slip, ipg txn id, cash receipt, etc.
+  proofUrl  String? @db.VarChar(500)
+
+  declaredAt DateTime?
+
+  verifiedById String? @db.Uuid
+  verifiedBy   SystemUser? @relation("PaymentVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  verifiedAt    DateTime?
+  rejectReason  String? @db.VarChar(500)
+
+  meta Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Active pointer back-reference (optional convenience, do not enforce)
+  activeForRequests ETCRegistrationRequest[] @relation("ActivePaymentAttempt")
+
+  @@unique([requestId, attemptNo])
+  @@index([requestId, status])
+  @@index([method])
+}
+
+/* ---------------------------------------------------------
+   Appointment Attempts (history + reschedules)
+--------------------------------------------------------- */
+
+model RequestAppointmentAttempt {
+  id        String @id @default(uuid()) @db.Uuid
+
+  requestId String @db.Uuid
+  request   ETCRegistrationRequest @relation("RequestAppointmentAttempts", fields: [requestId], references: [id], onDelete: Cascade)
+
+  attemptNo Int
+
+  locationId String @db.Uuid
+  location   InstallationLocation @relation(fields: [locationId], references: [id], onDelete: Restrict)
+
+  scheduledStartAt DateTime
+  scheduledEndAt   DateTime
+
+  mode   ScheduleMode
+  status AppointmentStatus @default(PENDING)
+
+  calendarProvider String? @db.VarChar(40)  // INTERNAL, GOOGLE, NONE
+  calendarEventId  String? @db.VarChar(120)
+
+  createdById String? @db.Uuid
+  createdBy   SystemUser? @relation("AppointmentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  activeForRequests ETCRegistrationRequest[] @relation("ActiveAppointmentAttempt")
+
+  @@unique([requestId, attemptNo])
+  @@index([requestId, status])
+  @@index([locationId, scheduledStartAt])
+}
+
+/* ---------------------------------------------------------
+   Secure calendar link for user slot picking
+--------------------------------------------------------- */
+
+model AppointmentAccessLink {
+  id        String @id @default(uuid()) @db.Uuid
+
+  requestId String @db.Uuid
+  request   ETCRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  // Store HASH only
+  tokenHash String @unique @db.VarChar(255)
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  @@index([requestId, active])
+  @@index([expiresAt])
+}
+
+/* ---------------------------------------------------------
+   Audit logs + Internal comments
+--------------------------------------------------------- */
+
+model RequestAuditLog {
+  id        String @id @default(uuid()) @db.Uuid
+
+  requestId String @db.Uuid
+  request   ETCRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  action    AuditAction
+
+  oldData Json?
+  newData Json?
+
+  doneById String? @db.Uuid
+  doneBy   SystemUser? @relation(fields: [doneById], references: [id], onDelete: SetNull)
+
+  doneAt DateTime @default(now())
+  ipAddress String? @db.VarChar(80)
+
+  @@index([requestId, doneAt])
+  @@index([action])
+}
+
+model RequestComment {
+  id        String @id @default(uuid()) @db.Uuid
+
+  requestId String @db.Uuid
+  request   ETCRegistrationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  comment   String
+  visibility CommentVisibility @default(INTERNAL_ONLY)
+
+  createdById String? @db.Uuid
+  createdBy   SystemUser? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([requestId, createdAt])
+  @@index([visibility])
+}
