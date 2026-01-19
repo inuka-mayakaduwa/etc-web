@@ -26,7 +26,7 @@ export default async function PaymentPage({
     // Pass data to Client Component for interactivity
     return (
         <div className="container mx-auto max-w-3xl py-12 px-4">
-            <PaymentInterface request={request} />
+            <PaymentInterface request={JSON.parse(JSON.stringify(request))} />
         </div>
     );
 }

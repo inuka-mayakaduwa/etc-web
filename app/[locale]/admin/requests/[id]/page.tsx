@@ -11,6 +11,7 @@ import { format } from "date-fns"
 import { ArrowLeft, User, MapPin, Calendar, Tag, Clock, FileText, CreditCard, Building, Phone, Mail, History, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { RequestActions, ActivityTimeline } from "./components"
+import { RequestReceiptButton } from "@/components/admin/request-receipt-button"
 import { AdminAppointmentBooking, AdminAppointmentManagement, AppointmentHistory, AdminProvisioningManagement } from "./appointmentComponents"
 
 export default async function RequestDetailPage({
@@ -77,7 +78,13 @@ export default async function RequestDetailPage({
                         </p>
                     </div>
                 </div>
-                <RequestActions request={request} />
+                <div className="flex items-center gap-2">
+                    <RequestReceiptButton
+                        request={request}
+                        generatedBy={session.user.name || session.user.email || 'Unknown User'}
+                    />
+                    <RequestActions request={request} />
+                </div>
             </div>
 
             {/* Quick Stats */}

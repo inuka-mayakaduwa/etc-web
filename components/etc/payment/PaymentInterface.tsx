@@ -23,7 +23,7 @@ interface Props {
 import { useTranslations } from 'next-intl';
 
 export function PaymentInterface({ request }: Props) {
-    const t = useTranslations('ETC.Payment');
+    const t = useTranslations('Public.ETC.Payment');
     const router = useRouter();
     const [method, setMethod] = useState<PaymentMethod>('GOVPAY');
     const [reference, setReference] = useState('');

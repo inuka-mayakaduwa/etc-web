@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+// ... imports
+import * as XLSX from "xlsx"
 import { format } from "date-fns"
-import { Eye, User, Calendar, Download } from "lucide-react"
+import { Download, Eye, Calendar, User } from "lucide-react"
 import Link from "next/link"
 import { DataTableToolbar } from "@/components/admin/data-table-toolbar"
 import { FilterPopover } from "@/components/admin/filter-popover"
@@ -21,8 +23,8 @@ interface RequestListTableEnhancedProps {
   locations?: any[]
 }
 
-export function RequestListTableEnhanced({ 
-  requests, 
+export function RequestListTableEnhanced({
+  requests,
   statuses = [],
   officers = [],
   locations = []
@@ -36,7 +38,7 @@ export function RequestListTableEnhanced({
   const filteredRequests = useMemo(() => {
     return requests.filter((request) => {
       // Search filter
-      const matchesSearch = 
+      const matchesSearch =
         request.requestNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
         request.applicantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         request.lpn.toLowerCase().includes(searchQuery.toLowerCase())
@@ -45,8 +47,8 @@ export function RequestListTableEnhanced({
       const matchesStatus = statusFilter === "all" || request.currentStatus.category === statusFilter
 
       // Officer filter
-      const matchesOfficer = 
-        officerFilter === "all" || 
+      const matchesOfficer =
+        officerFilter === "all" ||
         (officerFilter === "unassigned" && !request.assignedOfficer) ||
         request.assignedOfficerId === officerFilter
 
@@ -57,7 +59,7 @@ export function RequestListTableEnhanced({
     })
   }, [requests, searchQuery, statusFilter, officerFilter, typeFilter])
 
-  const activeFilterCount = 
+  const activeFilterCount =
     (statusFilter !== "all" ? 1 : 0) +
     (officerFilter !== "all" ? 1 : 0) +
     (typeFilter !== "all" ? 1 : 0)
@@ -80,6 +82,55 @@ export function RequestListTableEnhanced({
     const types = new Set(requests.map(r => r.requestType))
     return Array.from(types)
   }, [requests])
+
+  const handleExport = () => {
+    // Map the data for export
+    const exportData = filteredRequests.map(request => ({
+      'Request No': request.requestNo,
+      'Applicant Name': request.applicantName,
+      'NIC/Passport': request.applicantNICOrPassport,
+      'Mobile': request.applicantMobile,
+      'Email': request.applicantEmail || 'N/A',
+      'Vehicle LPN': request.lpn,
+      'Vehicle Type': request.vehicleType?.label || request.vehicleType,
+      'Status': request.currentStatus?.label || request.currentStatus,
+      'Assigned Officer': request.assignedOfficer?.name || 'Unassigned',
+      'Submitted Date': format(new Date(request.submittedAt), 'yyyy-MM-dd HH:mm:ss'),
+      'Request Type': request.requestType
+    }))
+
+    // Create a new workbook
+    const wb = XLSX.utils.book_new()
+
+    // Create a worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData)
+
+    // Auto-size columns (simple approximation)
+    const colWidths = [
+      { wch: 20 }, // Request No
+      { wch: 25 }, // Applicant Name
+      { wch: 15 }, // NIC
+      { wch: 15 }, // Mobile
+      { wch: 25 }, // Email
+      { wch: 15 }, // LPN
+      { wch: 15 }, // Vehicle Type
+      { wch: 15 }, // Status
+      { wch: 20 }, // Officer
+      { wch: 20 }, // Date
+      { wch: 15 }, // Type
+    ]
+    ws['!cols'] = colWidths
+
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, "Requests")
+
+    // Generate file name
+    const timestamp = format(new Date(), 'yyyyMMdd_HHmmss')
+    const fileName = `etc_requests_export_${timestamp}.xlsx`
+
+    // Write and trigger download
+    XLSX.writeFile(wb, fileName)
+  }
 
   return (
     <div className="space-y-4">
@@ -143,9 +194,9 @@ export function RequestListTableEnhanced({
           </div>
         </FilterPopover>
 
-        <Button variant="outline" size="sm" className="h-8 gap-2">
+        <Button variant="outline" size="sm" className="h-8 gap-2" onClick={handleExport}>
           <Download className="h-4 w-4" />
-          Export
+          Export to XSLX
         </Button>
       </DataTableToolbar>
 
@@ -215,8 +266,8 @@ export function RequestListTableEnhanced({
                   </TableCell>
                   <TableCell className="text-right">
                     <Link href={`/admin/requests/${request.id}`}>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         size="sm"
                         className="opacity-0 group-hover:opacity-100 transition-opacity"
                       >
