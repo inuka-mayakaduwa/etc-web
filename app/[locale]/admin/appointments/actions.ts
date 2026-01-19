@@ -2,6 +2,7 @@
 
 import { auth } from "@/app/auth"
 import { prisma } from "@/lib/db"
+import { LocationWeeklySchedule } from "@prisma/client"
 import { requirePermission } from "@/lib/permissions"
 import { revalidatePath } from "next/cache"
 import { addMinutes, format, parse, isAfter, isBefore, isEqual, startOfDay, endOfDay } from "date-fns"
@@ -21,7 +22,7 @@ export async function getLocationSchedule(locationId: string) {
     // Return all 7 days, fill missing with closed
     const allDays = []
     for (let day = 0; day < 7; day++) {
-        const existing = schedules.find(s => s.dayOfWeek === day)
+        const existing = schedules.find((s: LocationWeeklySchedule) => s.dayOfWeek === day)
         allDays.push(existing || {
             dayOfWeek: day,
             isOpen: false,
