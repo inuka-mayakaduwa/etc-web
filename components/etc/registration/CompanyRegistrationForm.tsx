@@ -50,6 +50,12 @@ const formSchema = z.object({
         sms: z.boolean().default(true),
         email: z.boolean().default(false),
     }),
+
+    terms: z.object({
+        authorized: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+        windowTint: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+        agreement: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+    }),
 });
 
 interface Option {
@@ -84,6 +90,11 @@ export function CompanyRegistrationForm({ vehicleTypes, locations }: Props) {
                 sms: true,
                 email: true, // Default true for companies often
             },
+            terms: {
+                authorized: undefined, // Force user to check
+                windowTint: undefined,
+                agreement: undefined,
+            } as any,
         },
     });
 
@@ -361,6 +372,63 @@ export function CompanyRegistrationForm({ vehicleTypes, locations }: Props) {
                                     )}
                                 />
                             </div>
+                        </div>
+
+                        {/* Terms & Conditions */}
+                        <div className="space-y-4 pt-4 border-t">
+                            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Disclaimers</h3>
+
+                            <FormField
+                                control={form.control}
+                                name="terms.authorized"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>
+                                                I am authorized to register behalf of this vehicle
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="terms.windowTint"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel className="leading-normal">
+                                                I understand and accept that, to ensure proper installation and reliable reading of the ETC Pass in the Expressways, it may be necessary to cut out a portion of the window tint.
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="terms.agreement"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel className="leading-normal">
+                                                I agree to Terms and Conditions of the ETC Customer Service Agreement and certify that information provided was true
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
                         </div>
 
                         <Button type="submit" className="w-full" disabled={isSubmitting}>

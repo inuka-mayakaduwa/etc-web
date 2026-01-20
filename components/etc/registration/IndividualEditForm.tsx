@@ -36,12 +36,18 @@ const formSchema = z.object({
     applicantNICOrPassport: z.string().min(5, 'Valid ID required'),
     applicantMobile: z.string().regex(/^07[0-9]{8}$/, 'Must be a valid 10-digit mobile number starting with 07'),
     applicantEmail: z.string().email('Invalid email').optional().or(z.literal('')),
+    applicantAddress: z.string().min(5, 'Address is required'),
     lpn: z.string().min(2, 'License Plate Number required'),
     vehicleTypeCode: z.string().min(1, 'Select a vehicle type'),
     preferredLocationCode: z.string().min(1, 'Select a location'),
     notifications: z.object({
         sms: z.boolean().default(true),
         email: z.boolean().default(false),
+    }),
+    terms: z.object({
+        authorized: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+        windowTint: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+        agreement: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
     }),
 });
 
@@ -73,10 +79,16 @@ export function IndividualEditForm({ requestId, requestNo, initialValues, vehicl
             lpn: initialValues.lpn || '',
             vehicleTypeCode: initialValues.vehicleTypeCode || '',
             preferredLocationCode: initialValues.preferredLocationCode || '',
+            applicantAddress: initialValues.applicantAddress || '',
             notifications: {
                 sms: initialValues.notifySMS ?? true,
                 email: initialValues.notifyEmail ?? false,
             },
+            terms: {
+                authorized: undefined,
+                windowTint: undefined,
+                agreement: undefined,
+            } as any,
         },
     });
 
@@ -99,8 +111,10 @@ export function IndividualEditForm({ requestId, requestNo, initialValues, vehicl
                 lpn: values.lpn,
                 vehicleTypeId: vehicleType.id,
                 preferredLocationId: location.id,
+
                 notifySMS: values.notifications.sms,
                 notifyEmail: values.notifications.email,
+                applicantAddress: values.applicantAddress,
             };
 
             await updateApplication(requestId, payload);
@@ -182,6 +196,19 @@ export function IndividualEditForm({ requestId, requestNo, initialValues, vehicl
                                         <FormLabel>Email (Optional)</FormLabel>
                                         <FormControl>
                                             <Input placeholder="john@example.com" {...field} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="applicantAddress"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Address</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="123/4, Main Street, Colombo" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -297,6 +324,63 @@ export function IndividualEditForm({ requestId, requestNo, initialValues, vehicl
                                     )}
                                 />
                             </div>
+                        </div>
+
+                        {/* Terms & Conditions */}
+                        <div className="space-y-4 pt-4 border-t">
+                            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Disclaimers</h3>
+
+                            <FormField
+                                control={form.control}
+                                name="terms.authorized"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>
+                                                I am authorized to register behalf of this vehicle
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="terms.windowTint"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel className="leading-normal">
+                                                I understand and accept that, to ensure proper installation and reliable reading of the ETC Pass in the Expressways, it may be necessary to cut out a portion of the window tint.
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="terms.agreement"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormControl>
+                                            <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel className="leading-normal">
+                                                I agree to Terms and Conditions of the ETC Customer Service Agreement and certify that information provided was true
+                                            </FormLabel>
+                                            <FormMessage />
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
                         </div>
 
                         <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={isSubmitting}>

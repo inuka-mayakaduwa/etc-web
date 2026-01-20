@@ -59,6 +59,7 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
             .regex(/^[^\u0D80-\u0DFF\u0B80-\u0BFF]*$/, t('Validation.EnglishOnly')),
         applicantMobile: z.string().regex(/^07[0-9]{8}$/, t('Validation.MobileFormat')),
         applicantEmail: z.string().email(t('Validation.EmailInvalid')).optional().or(z.literal('')),
+        applicantAddress: z.string().min(5, 'Address is required'),
         lpn: z.string()
             .min(2, t('Validation.LPNRequired'))
             .regex(/^([A-Z]{2,3}|[0-9]{2,3})-[0-9]{4}$/, t('Validation.LPNFormat')),
@@ -67,6 +68,11 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
         notifications: z.object({
             sms: z.boolean().default(true),
             email: z.boolean().default(false),
+        }),
+        terms: z.object({
+            authorized: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+            windowTint: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
+            agreement: z.literal(true, { errorMap: () => ({ message: "You must accept this" }) }),
         }),
     });
 
@@ -77,6 +83,7 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
             applicantNICOrPassport: '',
             applicantMobile: '',
             applicantEmail: '',
+            applicantAddress: '',
             lpn: '',
             vehicleTypeCode: '',
             preferredLocationCode: '',
@@ -84,6 +91,11 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
                 sms: true,
                 email: false,
             },
+            terms: {
+                authorized: undefined, // undefined forces user to click
+                windowTint: undefined,
+                agreement: undefined,
+            } as any
         },
     });
 
@@ -100,6 +112,7 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
                 applicantNICOrPassport: values.applicantNICOrPassport,
                 applicantMobile: values.applicantMobile,
                 applicantEmail: values.applicantEmail || undefined,
+                applicantAddress: values.applicantAddress,
                 notifySMS: values.notifications.sms,
                 notifyEmail: values.notifications.email,
             };
@@ -209,23 +222,43 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
                                         />
                                     </div>
 
-                                    <FormField
-                                        control={form.control}
-                                        name="applicantEmail"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel className="text-base font-semibold text-foreground">{t('ApplicantDetails.Email.Label')}</FormLabel>
-                                                <FormControl>
-                                                    <Input
-                                                        placeholder={t('ApplicantDetails.Email.Placeholder')}
-                                                        {...field}
-                                                        className="h-12 text-base px-4 rounded-lg border-2 border-border bg-white/50 focus:bg-white transition-colors"
-                                                    />
-                                                </FormControl>
-                                                <FormMessage className="text-base" />
-                                            </FormItem>
-                                        )}
-                                    />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <FormField
+                                            control={form.control}
+                                            name="applicantEmail"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-base font-semibold text-foreground">{t('ApplicantDetails.Email.Label')}</FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder={t('ApplicantDetails.Email.Placeholder')}
+                                                            {...field}
+                                                            className="h-12 text-base px-4 rounded-lg border-2 border-border bg-white/50 focus:bg-white transition-colors"
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage className="text-base" />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control}
+                                            name="applicantAddress"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="text-base font-semibold text-foreground">Address <span className="text-destructive">*</span></FormLabel>
+                                                    <FormControl>
+                                                        <Input
+                                                            placeholder="Enter your address"
+                                                            {...field}
+                                                            className="h-12 text-base px-4 rounded-lg border-2 border-border bg-white/50 focus:bg-white transition-colors"
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage className="text-base" />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 
@@ -367,6 +400,66 @@ export function IndividualRegistrationForm({ vehicleTypes, locations }: Props) {
                                                         {t('Preferences.Email')}
                                                     </FormLabel>
                                                     <p className="text-sm text-muted-foreground">Receive email notifications</p>
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Disclaimers Section */}
+                            <div className="bg-gradient-to-r from-primary/5 to-transparent px-6 md:px-8 pt-8 pb-8 border-b border-border">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <h2 className="text-xl font-bold text-foreground">Disclaimers</h2>
+                                </div>
+                                <div className="space-y-4">
+                                    <FormField
+                                        control={form.control}
+                                        name="terms.authorized"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
+                                                <FormControl>
+                                                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>
+                                                        I confirm that I am the authorized user of this vehicle and I am responsible for all ETC transactions.
+                                                    </FormLabel>
+                                                    <FormMessage />
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="terms.windowTint"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
+                                                <FormControl>
+                                                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>
+                                                        I acknowledge that window tint may affect tag performance.
+                                                    </FormLabel>
+                                                    <FormMessage />
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="terms.agreement"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
+                                                <FormControl>
+                                                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>
+                                                        I agree to the <a href="#" className="underline text-primary">Terms & Conditions</a>.
+                                                    </FormLabel>
+                                                    <FormMessage />
                                                 </div>
                                             </FormItem>
                                         )}

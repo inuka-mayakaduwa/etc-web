@@ -9,10 +9,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { addComment, updateRequestStatus, setRfidValue } from "../actions"
-import { MessageSquare, Tag, MoreVertical, UserPlus, CheckCircle, XCircle, Edit, AlertCircle } from "lucide-react"
+import { MessageSquare, Tag, UserPlus, CheckCircle, XCircle, Edit, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 
 export function RequestActions({ request }: { request: any }) {
@@ -94,47 +93,47 @@ export function RequestActions({ request }: { request: any }) {
                     </Button>
                 )}
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon">
-                            <MoreVertical className="h-4 w-4" />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                        <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        
-                        {request.currentStatus.code === 'PENDING_TAG_CREATION' && request.rfidValue && (
-                            <DropdownMenuItem onClick={() => handleStatusChange('AWAITING_APPOINTMENT')}>
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                Move to Awaiting Appointment
-                            </DropdownMenuItem>
-                        )}
+                {request.currentStatus.code === 'PENDING_TAG_CREATION' && request.rfidValue && (
+                    <Button
+                        onClick={() => handleStatusChange('AWAITING_APPOINTMENT')}
+                        variant="outline"
+                    >
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Move to Awaiting Appointment
+                    </Button>
+                )}
 
-                        {request.currentStatus.code === 'PENDING_INFORMATION_REVIEW' && (
-                            <>
-                                <DropdownMenuItem onClick={() => handleStatusChange('PENDING_TAG_CREATION')}>
-                                    <CheckCircle className="h-4 w-4 mr-2" />
-                                    Approve Information
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                    const reason = prompt("Enter reason for requesting edits:")
-                                    if (reason) handleStatusChange('PENDING_INFORMATION_EDIT', reason)
-                                }}>
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Request Edits
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => {
-                                    const reason = prompt("Enter reason for rejection:")
-                                    if (reason) handleStatusChange('PENDING_REFUND', reason)
-                                }} className="text-destructive">
-                                    <XCircle className="h-4 w-4 mr-2" />
-                                    Reject Request
-                                </DropdownMenuItem>
-                            </>
-                        )}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {request.currentStatus.code === 'PENDING_INFORMATION_REVIEW' && (
+                    <>
+                        <Button
+                            onClick={() => handleStatusChange('PENDING_TAG_CREATION')}
+                            variant="outline"
+                        >
+                            <CheckCircle className="h-4 w-4 mr-2" />
+                            Approve Information
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                const reason = prompt("Enter reason for requesting edits:")
+                                if (reason) handleStatusChange('PENDING_INFORMATION_EDIT', reason)
+                            }}
+                            variant="outline"
+                        >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Request Edits
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                const reason = prompt("Enter reason for rejection:")
+                                if (reason) handleStatusChange('PENDING_REFUND', reason)
+                            }}
+                            variant="destructive"
+                        >
+                            <XCircle className="h-4 w-4 mr-2" />
+                            Reject Request
+                        </Button>
+                    </>
+                )}
             </div>
 
             {/* Add Comment Dialog */}

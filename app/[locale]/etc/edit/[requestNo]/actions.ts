@@ -32,7 +32,9 @@ export async function updateApplication(requestId: string, data: any) {
                 applicantName: data.applicantName,
                 applicantNICOrPassport: data.applicantNICOrPassport,
                 applicantMobile: data.applicantMobile,
+                applicantMobile: data.applicantMobile,
                 applicantEmail: data.applicantEmail,
+                applicantAddress: data.applicantAddress,
                 lpn: data.lpn,
                 vehicleTypeId: data.vehicleTypeId, // Using ID, assumed ID passed or need lookup? 
                 // Form usually works with codes. I need to resolve code to ID if needed.

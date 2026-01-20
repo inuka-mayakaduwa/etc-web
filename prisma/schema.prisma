@@ -468,6 +468,7 @@ model ETCRegistrationRequest {
   applicantNICOrPassport String @db.VarChar(40)
   applicantMobile      String  @db.VarChar(30)
   applicantEmail       String? @db.VarChar(150)
+  applicantAddress     String? @db.VarChar(255)
 
   notifySMS   Boolean @default(true)
   notifyEmail Boolean @default(false)

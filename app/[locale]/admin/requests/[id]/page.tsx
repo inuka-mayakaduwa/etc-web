@@ -213,6 +213,13 @@ export default async function RequestDetailPage({
                                             <p className="font-medium">{request.applicantEmail || 'Not provided'}</p>
                                         </div>
                                     </div>
+                                    <div className="flex items-start gap-2">
+                                        <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                        <div className="flex-1">
+                                            <p className="text-xs text-muted-foreground">Address</p>
+                                            <p className="font-medium">{request.applicantAddress || 'Not provided'}</p>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {request.companyName && (
